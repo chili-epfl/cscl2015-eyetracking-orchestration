@@ -14,7 +14,7 @@ Teacher facilitation of CSCL activities is widely recognized as one of the main 
 
 Our main research question is: can we use eye-tracking techniques to follow cognitive load of teachers facilitating CSCL in authentic settings? In order to explore this question, we set out to apply the measurement of the four metrics used by [Buettner (2013)](http://link.springer.com/chapter/10.1007/978-3-642-40942-4_4) in three studies (with increasing degree of authenticity).
 
-Study | Analytical | Semi-authentic | Authentic
+Study | 1 - Analytical | 2 - Semi-authentic | 3 - Authentic
 ------|------------|----------------|----------
 Setting | Laboratory | Multi-tabletop classroom, lab ‘open doors’ day | Authentic course, classroom including projector and laptops
 Goal | Test method in different task, see evolution of CL over time | Feasibility of eye-tracking within classroom constraints, insights about multi-tabletop classroom usability | Feasibility of eye-tracking in real course, individual differences of novice/expert teachers
@@ -42,24 +42,94 @@ First of all, we download the datasets for the three studies, which have been pu
 * [Dataset for Study 3 (Laptop-and-projector sessions in a university course) MISSING LINK]()
 
 ```{r}
+# We load the useful scripts and packages needed throughout the report
+source("./lib/rollingWindows.R")
+source("./lib/loadIndex.R")
+
 rootdir <- getwd()
 # If not present already, download dataset study 1 and uncompress it to Study1/
 setwd(paste(rootdir,"/data/Study1",sep=""))
 # if(!file.exists())...
+# unzip/bz2...
 # If not present already, download dataset study 2 and uncompress it to Study2/
 # If not present already, download dataset study 3 and uncompress it to Study3/
 ```
 
 ## Study 1 (Analytical study): cognitive load in a simple game-based task 
 
+As a first step in our exploration of eye-tracking to follow teacher cognitive load, and taking into account that eye responses are often task-dependent, we devised a first test for the validity of the measurements proposed by Buettner. Using existing eye-tracking data from a previous experiment in which participants played a computer game (unrelated to the task in Buettner’s study), we estimated the evolution of the CL of participants throughout their experience, to see whether the results were consistent with what we knew about the game task in question and its temporal evolution.
+
 ### Data pre-processing
 
+We uncompress the data from the study (warning, it is almost 1G of files!). This includes mainly a time series of eyetracking data along with the value of several game variables (e.g., mean Tetris stack height) in each instant, plus an additional set of files with the fixation details of each game in the experiment.
+
+```{r, cache=TRUE}
+setwd(paste(rootdir,"/data/Study1",sep=""))
+unzip("ALLCombinedVariables_timeseriesPupilEvolution.csv.zip")
+unzip("FixationDetails.zip")
+source("preprocessStudy1Data.R")
+# We do the preprocessing, which will generate a Rda file with the 10s
+# window data, and will return the name of the file
+cleandata <- preprocessStudy1()
+```
 
 ### Data analysis
 
+The main basic data analysis we do here is just to calculate the Load Index for each 10s window in a game:
 
-### Main results
+```{r}
+source("../lib/loadIndex.R")
 
+# We load the overall dataset with the data from the 10s sliding windows
+totaldata <- get(load(cleandata))
+
+# This dataframe will contain the data with the added Load Index data
+loaddata <- data.frame()
+
+# We calculate the load index, considering each game a different session
+# for the effects of the median cut
+games = unique(totaldata$gameID[])
+for(game in games){
+    data <- totaldata[totaldata$gameID == game,]
+    # We add the columns with Load Index data
+    newdata <- calculateLoadIndexSession(data)    
+    # We join the new data into a dataset with all session's data
+    if(length(loaddata)==0) loaddata <- newdata
+    else loaddata <- rbind(loaddata,newdata)
+}       
+
+# Now, loaddata will contain the data to be summarized/visualized
+```
+
+
+### Main Results and visualization
+
+If we look at the mean values of Load index and different game variables (mainly, the Tetris mean stack height and its variance)
+
+**1. Temporal evolution**
+
+```{r}
+require("gplots")
+require("ggplot2")
+
+# TODO: What was the code for this graph - Figure 1a in the paper??
+
+```
+
+We can see the average cognitive load index (brown curve) of participants as time went on, as well as the temporal evolution of the stack height (green curve) and stack variance (blue curve). If we think in terms of the particular task (the Tetris game), we get interesting insights into how the cognitive load evolves over time: at the beginning (low mean stack heights) the cognitive load is high (as many alternative options for placing a new piece are open to decide amongst), and it generally goes down as the game goes towards the end (higher mean stack height), until we eventually disengage from the game when we give up. Similar but opposite is the effect of stack variance (higher variance implies more complex stack profiles, difficult to process and with more open alternatives of placement).
+
+**2. Load Index vs. Game variables (stack height mean/variance)**
+
+```{r}
+plotmeans(loaddata$value.stackMean~loaddata$Load)
+plotmeans(loaddata$value.stackVar~loaddata$Load)
+```
+
+The main descriptive statistics of both game variables on 10-second windows, classified by their load index. Our results show that the Load Index is positively correlated with stack variance, and negatively correlated with the mean stack height, and that such an effect is more clearly apparent in the extreme values of the load index.
+
+### Summary of results
+
+These results show that the Load Index, computed as described above, has potential for distinguishing different kinds of episodes occurring during the task (represented by moments with different mean stack heights and variances). We also see how CL may be related with the amount of open alternatives in each moment (in a sense, the uncertainty or the ‘entropy’ we perceive about the current game situation).
 
 ## Study 2 (Semi-authentic study): multi-tabletops at an open-doors day in the lab
 
