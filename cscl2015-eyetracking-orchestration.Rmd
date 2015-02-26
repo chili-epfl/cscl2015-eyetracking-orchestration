@@ -35,6 +35,20 @@ Then, the high- and low- Load Index episodes are compared along these three dime
 
 ## Before starting: Data download
 
+First of all, we download the datasets for the three studies, which have been published in Zenodo: 
+
+* [Dataset for Study 1 (Tetris games) MISSING LINK]()
+* [Dataset for Study 2 (Multi-tabletop sessions in the lab, primary school students) MISSING LINK]()
+* [Dataset for Study 3 (Laptop-and-projector sessions in a university course) MISSING LINK]()
+
+```{r}
+rootdir <- getwd()
+# If not present already, download dataset study 1 and uncompress it to Study1/
+setwd(paste(rootdir,"/data/Study1",sep=""))
+# if(!file.exists())...
+# If not present already, download dataset study 2 and uncompress it to Study2/
+# If not present already, download dataset study 3 and uncompress it to Study3/
+```
 
 ## Study 1 (Analytical study): cognitive load in a simple game-based task 
 
