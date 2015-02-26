@@ -1,0 +1,69 @@
+---
+title: "The Burden of Facilitating Collaboration: Towards Estimation of Teacher Orchestration Load using Eye-tracking Measures"
+author: "Luis P. Prieto, Kshitij Sharma, Yun Wen & Pierre Dillenbourg"
+output: html_document
+---
+
+This is an R Markdown document to reproduce the main data preprocessing, analysis and visualization for the homonymous [CSCL2015 conference](http://isls.org/cscl2015/) paper. Below, we reproduce the abstract of the paper, a summary of the context and methods of the studies, and then the analysis and visualization of the studies themselves.
+
+## Abstract
+
+Teacher facilitation of CSCL activities is widely recognized as one of the main factors affecting student learning outcomes in formal face-to-face settings. However, the orchestration load that such facilitation represents for the teacher, within the constraints of an authentic classroom, remains under-researched. This paper presents a novel method to estimate the cognitive load of teachers during facilitation of CSCL sessions, using mobile eye-tracking techniques. Throughout **three studies of increasing authenticity**, we demonstrate the feasibility of this approach, and extract insights about classroom usability challenges in CSCL practice: the increased load of class-level facilitation, or the real-time monitoring of students’ progress. This new instrument in the CSCL researcher’s toolkit can help focus our attention in critical, fine-grained classroom usability episodes, to make more informed design decisions.
+
+## The studies: Context and Methods
+
+Our main research question is: can we use eye-tracking techniques to follow cognitive load of teachers facilitating CSCL in authentic settings? In order to explore this question, we set out to apply the measurement of the four metrics used by [Buettner (2013)](http://link.springer.com/chapter/10.1007/978-3-642-40942-4_4) in three studies (with increasing degree of authenticity).
+
+Study | Analytical | Semi-authentic | Authentic
+------|------------|----------------|----------
+Setting | Laboratory | Multi-tabletop classroom, lab ‘open doors’ day | Authentic course, classroom including projector and laptops
+Goal | Test method in different task, see evolution of CL over time | Feasibility of eye-tracking within classroom constraints, insights about multi-tabletop classroom usability | Feasibility of eye-tracking in real course, individual differences of novice/expert teachers
+Subjects | 16 participants | 1 facilitator-researcher, 61 primary school students | 1 expert teacher, 1 novice teacher, 12-14 students
+Task | Game-based | Facilitation of small group collaborative work | Mix of lecture and collaborative work
+Study duration | 128 games in total, 1.5-4 minutes each | 3 sessions, 35-45 min each | 3 sessions (2 expert, 1 novice), 45-65 min each
+Analysis | Calculation of Load Index, comparison with Tetris game metrics | Calculation of Load Index, Video coding, Comparison of high- and low-load orchestration profiles | Calculation of Load Index, Video coding, Comparison of high- and low-load orchestration profiles
+
+The data analysis of the three studies relies mainly on the calculation of what we call a **Load Index** inferred from eye-tracking measures of the subject. The four measures used by Buettner (mean pupil diameter, pupil diameter standard deviation, saccade speed and number of fixations longer than 500ms) were calculated over a sliding window of 10 seconds (with a 5s slide from one window to the next). Then, a median cut was performed (using the median value of that measurement for the session). Finally, the Load Index was calculated by counting the number of measures that were above the game median for that 10-second window (thus going from 0 to 4), as an estimation of how likely it is that a certain 10-second window represented higher cognitive load than other windows in that session.
+
+In the second and third studies, the episodes (10-second windows) of extreme Load Index (0 and 4) were manually **video coded**, to describe different aspects of that episode, with regard to the orchestration taking place in that moment:
+
+Orchestration dimension | Teacher activity | Social plane | Main gaze focus
+------------------------|------------------|--------------|----------------
+Example codes | Explanation/Lecturing (EXP), Monitoring (MON), Task distribution or transition (TDT), Technical or conceptual repairs (REP)... | Individual (IND), Small group (GRP), Class-wide (CLS) | Students’ faces (FAC) or backs (BAK), Tabletop surface (TAB), Paper worksheet (PAP)...
+
+Then, the high- and low- Load Index episodes are compared along these three dimensions, to see if they are significantly different (with a Pearson's chi-squared test of independence).
+
+## Before starting: Data download
+
+
+## Study 1 (Analytical study): cognitive load in a simple game-based task 
+
+### Data pre-processing
+
+
+### Data analysis
+
+
+### Main results
+
+
+## Study 2 (Semi-authentic study): multi-tabletops at an open-doors day in the lab
+
+
+## Study 3 (Authentic study): master-level university course
+
+
+
+## Conclusions
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
