@@ -9,6 +9,7 @@ preprocessStudy1 <- function(){
     # We load the pupil time series data (BIG file!)
     tetrisPupil <- read.csv.ffdf(file="ALLCombinedVariables_timeseriesPupilEvolution.csv",header=T,VERBOSE=T,first.rows=10000,next.rows=50000,colClasses=NA)
     
+    
     # The game IDs to iterate through
     games = unique(tetrisPupil$gameID[])
     window = 10000
@@ -83,9 +84,10 @@ preprocessStudy1 <- function(){
         
     }
     
-    print("Preprocessing finished. Writing clean datafile")
+    print("Preprocessing finished. Writing clean datafile: Study1ProcessedData.Rda")
     save(totaldata,file="Study1ProcessedData.Rda")
-
-    "Study1ProcessedData.Rda"
+    unlink("Study1ProcessedData.Rda")
+    
+    totaldata
     
 }

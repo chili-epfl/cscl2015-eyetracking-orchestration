@@ -61,27 +61,39 @@ As a first step in our exploration of eye-tracking to follow teacher cognitive l
 
 ### Data pre-processing
 
-We uncompress the data from the study (warning, it is almost 1G of files!). This includes mainly a time series of eyetracking data along with the value of several game variables (e.g., mean Tetris stack height) in each instant, plus an additional set of files with the fixation details of each game in the experiment.
+We uncompress the data from the study (warning, it is almost 5G of files!). This includes mainly a time series of eyetracking data along with the value of several game variables (e.g., mean Tetris stack height) in each instant, plus an additional set of files with the fixation details of each game in the experiment. 
+
+Once we uncompress the data, we run the pre-processing of data: basically, separating the data for each game, and calculating the four eyetracking variables of interest, over 10-second rolling windows with 5-second slide:
+
+* Pupil diameter mean
+* Pupil diameter standard deviation
+* Number of fixations with duration >500ms
+* Average saccade speed
+
+(see ```./data/Study1/preprocessStudy1Data.R``` and ```./lib/rollingWindows.R``` files for details)
 
 ```{r, cache=TRUE}
 setwd(paste(rootdir,"/data/Study1",sep=""))
-unzip("ALLCombinedVariables_timeseriesPupilEvolution.csv.zip")
-unzip("FixationDetails.zip")
 source("preprocessStudy1Data.R")
 # We do the preprocessing, which will generate a Rda file with the 10s
 # window data, and will return the name of the file
-cleandata <- preprocessStudy1()
+cleandatafile <- "Study1ProcessedData.Rda"
+if(!file.exists(cleandatafile)){
+    if(!file.exists("ALLCombinedVariables_timeseriesPupilEvolution.csv")){
+        unzip("ALLCombinedVariables_timeseriesPupilEvolution.csv.zip")                
+    }
+    unzip("FixationDetails.zip")
+    preprocessStudy1()
+}
 ```
 
 ### Data analysis
 
-The main basic data analysis we do here is just to calculate the Load Index for each 10s window in a game:
+The main basic data analysis we do here is just to calculate the Load Index for each 10s window in a game (see ```./lib/loadIndex.R``` file for details):
 
 ```{r}
-source("../lib/loadIndex.R")
-
 # We load the overall dataset with the data from the 10s sliding windows
-totaldata <- get(load(cleandata))
+totaldata <- get(load(paste(rootdir,"/data/Study1/",cleandatafile,sep="")))
 
 # This dataframe will contain the data with the added Load Index data
 loaddata <- data.frame()
@@ -108,7 +120,7 @@ If we look at the mean values of Load index and different game variables (mainly
 
 **1. Temporal evolution**
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 require("gplots")
 require("ggplot2")
 
@@ -120,9 +132,15 @@ We can see the average cognitive load index (brown curve) of participants as tim
 
 **2. Load Index vs. Game variables (stack height mean/variance)**
 
-```{r}
-plotmeans(loaddata$value.stackMean~loaddata$Load)
-plotmeans(loaddata$value.stackVar~loaddata$Load)
+```{r, message=FALSE, warning=FALSE}
+plotmeans(loaddata$value.stackMean~loaddata$Load, 
+          xlab="Load Index",
+            ylab="Mean stack height (avg. 10s episode)",
+            main="Load Index vs. Stack height", barwidth=2)
+plotmeans(loaddata$value.stackVar~loaddata$Load,
+          xlab="Load Index",
+            ylab="Stack height variance (avg. 10s episode)",
+            main="Load Index vs. Stack height", barwidth=2)
 ```
 
 The main descriptive statistics of both game variables on 10-second windows, classified by their load index. Our results show that the Load Index is positively correlated with stack variance, and negatively correlated with the mean stack height, and that such an effect is more clearly apparent in the extreme values of the load index.
