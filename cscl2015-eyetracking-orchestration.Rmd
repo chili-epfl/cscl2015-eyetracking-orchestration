@@ -72,7 +72,7 @@ Once we uncompress the data, we run the pre-processing of data: basically, separ
 
 (see ```./data/Study1/preprocessStudy1Data.R``` and ```./lib/rollingWindows.R``` files for details)
 
-```{r, cache=TRUE}
+```{r, cache=TRUE, message=FALSE, warning=FALSE}
 setwd(paste(rootdir,"/data/Study1",sep=""))
 source("preprocessStudy1Data.R")
 # We do the preprocessing, which will generate a Rda file with the 10s
@@ -151,21 +151,38 @@ These results show that the Load Index, computed as described above, has potenti
 
 ## Study 2 (Semi-authentic study): multi-tabletops at an open-doors day in the lab
 
+For the next study we aimed to explore the following research questions: _is it feasible to use a mobile eye-tracker to follow CL in a semi-authentic classroom setting? Does such analysis provide interesting insights about classroom usability of a novel CSCL technology? Can we detect specific classroom interaction episodes that imply high (or low) cognitive load?_.
+
+### Data pre-processing
+
+### Data analysis
+
+
+### Main results
+
+### Summary of results
+
+
+
+
+
 
 ## Study 3 (Authentic study): master-level university course
 
+For the last study, we set out to explore the following research questions: _is it feasible to use mobile eye-tracker to follow cognitive load in an authentic classroom/lesson?_ But also, since eye movement patterns can vary greatly from person to person and cognitive overload is known to be related to teaching expertise, we aimed at exploring a second question: _do teachers with different teaching experience show different load episode patterns?_.
+
+### Data pre-processing
+
+### Data analysis
+
+
+### Main results
+
+### Summary of results
 
 
 ## Conclusions
 
-```{r}
-summary(cars)
-```
+Overall, the three aforementioned studies show that the proposed combination of mobile eye-tracking measurements can be feasibly used in authentic classroom settings. Together with post-hoc qualitative video coding, the approach also showed potential for discriminating fine-grained critical episodes (either high- or low-load) during the CSCL enactment, without having to rely on the teacher's memory of the events. The distinct profiles of such episodes have helped us gain insights into the difficulties of orchestrating CSCL activities: the need for awareness/monitoring support in multi-tabletop classrooms, and the importance of classroom-level awareness in general, the challenge that clutter and a scattered user interface pose in augmented paper applications. The results also show that the facilitation CL is highly dependent on the teacher's prior experience.
 
-You can also embed plots, for example:
-
-```{r, echo=FALSE}
-plot(cars)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Our results across the three studies also provide a new insight about orchestration load, which should be explored in further studies: the fact that load seems to be correlated to the amount of "open alternatives" (i.e., the perceived uncertainty/entropy of the classroom situation). More novice teachers seemed to be especially sensitive to these high-uncertainty situations (e.g., looking at students faces during an explanation, trying to assess their comprehension; looking at students' backs while working in the tabletops, trying to assess their progress). This need of novice teachers for classroom management support can be used as a starting point for new technologies that can ameliorate the challenge of this kind of episodes (e.g., a system that helps novice lecturers to assess the attention or comprehension of their students).
