@@ -1,92 +1,109 @@
-require("ff")
-
 # This function loads the time series pupil data from the eyetracker 
-# (including Tetris game variables), the fixation details (in separate
-# csv files), and calculates the averages of multiple eyetracking metrics
+# (including Tetris game variables), the fixation and saccade details (in separate
+# txt/csv files), and calculates the averages/counts of multiple eyetracking metrics
 # and game variables for rolling windows of 10s (5s of slide between windows)
 preprocessStudy2 <- function(){
     
-    # We load the pupil time series data (BIG file!)
-    tetrisPupil <- read.csv.ffdf(file="ALLCombinedVariables_timeseriesPupilEvolution.csv",header=T,VERBOSE=T,first.rows=10000,next.rows=50000,colClasses=NA)
-    
-    
-    # The game IDs to iterate through
-    games = unique(tetrisPupil$gameID[])
-    window = 10000
-    slide = 5000
-    
-    # This is the dataframe that will contain our processed dataset
+    # Some basic parameters for the sliding windows (in seconds)
+    window <- 10
+    slide <- 5
     totaldata <- data.frame()
     
-    # We process all the eyetracking and game variables for each game
-    for (game in games){
+    sessions <- c("JDC2014-Session1-eyetracking","JDC2014-Session2-eyetracking","JDC2014-Session3-eyetracking")
+    for (session in sessions){
         
-        print(paste("Preprocessing game",game))
-        
-        gamepupil <- tetrisPupil[tetrisPupil$gameID[]==game,]
-        
-        # We get the game init time
-        gameinit <- min(gamepupil$time.milliseconds.)
-        
-        # We filter out undesired columns, and the rows were there is no pupil measure (saccades)
-        gamepupil <- gamepupil[gamepupil$Pupil.size!="saccade",-c(3,5,6,12:16)]
-        gamepupil$Pupil.size <- as.numeric(as.character(gamepupil$Pupil.size))
-        
-        gamepupilMean <- rollingMean(gamepupil$time.milliseconds.,gamepupil$Pupil.size,window,slide)
-        gamepupilSD <- rollingSd(gamepupil$time.milliseconds.,gamepupil$Pupil.size,window,slide)
-        
-        gamenumHoles <- rollingMean(gamepupil$time.milliseconds.,gamepupil$Number.Holes,window,slide)
-        gamestackMin <- rollingMean(gamepupil$time.milliseconds.,gamepupil$Stack.height.min,window,slide)
-        gamestackMax <- rollingMean(gamepupil$time.milliseconds.,gamepupil$Stack.height.max,window,slide)
-        gamestackMean <- rollingMean(gamepupil$time.milliseconds.,gamepupil$Stack.height.mean,window,slide)
-        gamestackVar <- rollingMean(gamepupil$time.milliseconds.,gamepupil$Stack.height.variance,window,slide)
-        
-        # We now try to get the fixation (and indirectly, saccade) information for the game
-        gamefix <- read.csv(file=paste("ATESTvariables_",games[1],".csv",sep=""), header=T)
-        gamefix$fixtime <- gamefix$start + (gamefix$end - gamefix$start)/2 # We make the Fixation time equal to the middle point of the fixation
-        gamefix$duration <- gamefix$end - gamefix$start
-        gamefixLong <- rollingLong(gamefix$fixtime,gamefix$duration,window,slide,inittime=gameinit)
-        
-        # We derive the approximate saccade measures from the fixations (the end of a fixation is the start of a saccade, and vice-versa)
-        gamesac <- data.frame(start=gamefix$end[1:(length(gamefix$end)-1)])
-        gamesac$end <- gamefix$start[2:(length(gamefix$end))]
-        gamesac$duration <- gamesac$end - gamesac$start
-        gamesac$sactime <- gamesac$start + gamesac$duration/2 # We make the Saccade timepoint equal to the middle point of the saccade
-        gamesac$amplitude <- numeric(nrow(gamesac)) # This field will contain the amplitude of the saccade, measured in game cells
-        for(i in 1:nrow(gamesac)){
-            gamesac$amplitude[i] <- sqrt((gamefix$row[i+1]-gamefix$row[i])^2+(gamefix$col[i+1]-gamefix$col[i])^2)
+        # We check whether the clean data is already in place - if so, we skip this pre-processing
+        if(!file.exists(paste("./",session,".EyetrackerEvents.rda",sep="")) ||
+               !file.exists(paste("./",session,".EyetrackerFixations.rda",sep="")) ||
+               !file.exists(paste("./",session,".EyetrackerSaccades.rda",sep=""))){
+            
+            # We load the raw events export
+            filename = paste("./",session,"-eventexport.txt", sep="")
+            filedata <- read.csv(filename,as.is=T,comment.char="#")
+            
+            # From all the data, we only need timestamp, pupil diameter (L,R, in mm)
+            filedata <- filedata[c(1,6,9)]
+            filedata$Session <- session
+            pupildata <- data.frame(filedata)
+            
+            # We calculate the time baseline of the session
+            time0 <- min(pupildata$Time)
+            pupildata$Time.ms <- (pupildata$Time - time0) / 1000
+            
+            # We load the fixation details file
+            filename = paste("./",session,"-fixationDetails.txt", sep="")
+            filedata <- read.csv(filename,comment.char="#")
+            
+            # we select the meaningful columns (for now, only fixation start, duration, end in ms)
+            # it is different in the exports we have for different teachers!
+            filedata <- filedata[,c(8,9,10)]
+
+            filedata$Session <- session
+            fixdata <- data.frame(filedata)
+            
+            #We set the time of the fixation in the middle of the fixation
+            fixdata$Time.ms <- (fixdata$Fixation.Start..ms. + (fixdata$Fixation.Duration..ms./2)) 
+            # We create a Time field so that we have the time in both timestamp and ms formats
+            fixdata$Time <- time0 + (fixdata$Time.ms)*1000
+            
+            # We load the saccade details file
+            filename = paste("./",session,"-saccadeDetails.txt", sep="")
+            filedata <- read.csv(filename,comment.char="#")
+            
+            # we select the meaningful columns (for now, only saccade start, duration, end in ms and amplitude in degrees)
+            # it is different in the exports we have for different teachers!
+            filedata <- filedata[,c(8,9,10,15)]
+            filedata$Session <- session
+            sacdata <- data.frame(filedata)
+            # We add the saccade speed for each saccade
+            sacdata$Saccade.Speed <- sacdata$Amplitude.... / sacdata$Saccade.Duration..ms.
+            
+            #We set the time of saccade in the middle of the fixation
+            sacdata$Time.ms <- (sacdata$Saccade.Start..ms. + (sacdata$Saccade.Duration..ms./2)) 
+            # We create a Time field so that we have the time in both timestamp and ms formats
+            sacdata$Time <- time0 + (sacdata$Time.ms)*1000
+            
+            # We save the clean(er) data to smaller, more efficient rda files
+            save(pupildata,file=paste("./",session,".EyetrackerEvents.rda",sep=""),compress=TRUE)
+            save(fixdata,file=paste("./",session,".EyetrackerFixations.rda",sep=""),compress=TRUE)
+            save(sacdata,file=paste("./",session,".EyetrackerSaccades.rda",sep=""),compress=TRUE)
+            
         }
-        gamesac$speed <- gamesac$amplitude / gamesac$duration
-        gamesacSpd <- rollingMean(gamesac$sactime,gamesac$speed,window,slide,inittime=gameinit)
         
-        # We merge all this game's data
-        data <- merge(gamepupilMean,gamepupilSD,by="time",suffixes=c(".pupilMean",".pupilSD"))
-        data <- merge(data,gamefixLong,by="time")
-        names(data)[length(data)] <- "value.longFix"
-        data <- merge(data,gamesacSpd,by="time")
-        names(data)[length(data)] <- "value.sacSpd"
-        data <- merge(data,gamenumHoles,by="time")
-        names(data)[length(data)] <- "value.numHoles"
-        data <- merge(data,gamestackMin,by="time")
-        names(data)[length(data)] <- "value.stackMin"
-        data <- merge(data,gamestackMax,by="time")
-        names(data)[length(data)] <- "value.stackMax"
-        data <- merge(data,gamestackMean,by="time")
-        names(data)[length(data)] <- "value.stackMean"
-        data <- merge(data,gamestackVar,by="time")
-        names(data)[length(data)] <- "value.stackVar"
+        # We load the clean data, just in case we did not the previous steps
+        pupildata <- get(load(paste("./",session,".EyetrackerEvents.rda",sep="")))
+        fixdata <- get(load(paste("./",session,".EyetrackerFixations.rda",sep="")))
+        sacdata <- get(load(paste("./",session,".EyetrackerSaccades.rda",sep="")))
         
-        data$gameID <- rep(game,nrow(data))
+        # We get the rolling window for the mean pupil diameter, and its median value for a median cut
+        meandata <- rollingMean(pupildata$Time.ms,pupildata$L.Pupil.Diameter..mm.,window*1000,slide*1000)
         
+        # We get the rolling window for the SD of pupil diameter, and its median value for a median cut
+        sddata <- rollingSd(pupildata$Time.ms,pupildata$L.Pupil.Diameter..mm.,window*1000,slide*1000)
+        
+        # We get the number of long fixations in the window, and its median
+        longdata <- rollingLong(fixdata$Time.ms,fixdata$Fixation.Duration..ms.,window*1000,slide*1000,inittime=0)
+        
+        # We get the saccade speed in the window
+        sacspdata <- rollingMean(sacdata$Time.ms,sacdata$Saccade.Speed,window*1000,slide*1000, inittime=0)
+        
+        data <- merge(meandata,sddata,by="time",suffixes = c(".Mean",".SD"),all=T)
+        data <- merge(data,longdata,by="time",all=T)
+        names(data)[[4]] <- paste(names(data)[[4]],"Fix",sep=".")
+        data <- merge(data,sacspdata,by="time",all=T)
+        names(data)[[5]] <- paste(names(data)[[5]],"Sac",sep=".")
+        data$Session <- session
+
         # We join the game data to our global dataset
         if(length(totaldata)==0) totaldata <- data
         else totaldata <- rbind(totaldata,data)
-        
+
+
     }
-    
-    print("Preprocessing finished. Writing clean datafile: Study1ProcessedData.Rda")
-    save(totaldata,file="Study1ProcessedData.Rda")
-    unlink("Study1ProcessedData.Rda")
+
+    print("Preprocessing finished. Writing clean datafile: Study2ProcessedData.Rda")
+    save(totaldata,file="Study2ProcessedData.Rda")
+    unlink("Study2ProcessedData.Rda")
     
     totaldata
     

@@ -4,15 +4,15 @@ author: "Luis P. Prieto, Kshitij Sharma, Yun Wen & Pierre Dillenbourg"
 output: html_document
 ---
 
-This is an R Markdown document to reproduce the main data preprocessing, analysis and visualization for the homonymous [CSCL2015 conference](http://isls.org/cscl2015/) paper. Below, we reproduce the abstract of the paper, a summary of the context and methods of the studies, and then the analysis and visualization of the studies themselves.
+This is an R Markdown document to reproduce the main data preprocessing, analysis and visualization for the homonymous [CSCL2015 conference](http://isls.org/cscl2015/) paper. Below, we reproduce the abstract of the paper, a summary of the context and methods of the studies, and then the analysis and visualization of results from the studies.
 
 ## Abstract
 
-Teacher facilitation of CSCL activities is widely recognized as one of the main factors affecting student learning outcomes in formal face-to-face settings. However, the orchestration load that such facilitation represents for the teacher, within the constraints of an authentic classroom, remains under-researched. This paper presents a novel method to estimate the cognitive load of teachers during facilitation of CSCL sessions, using mobile eye-tracking techniques. Throughout **three studies of increasing authenticity**, we demonstrate the feasibility of this approach, and extract insights about classroom usability challenges in CSCL practice: the increased load of class-level facilitation, or the real-time monitoring of students’ progress. This new instrument in the CSCL researcher’s toolkit can help focus our attention in critical, fine-grained classroom usability episodes, to make more informed design decisions.
+Teacher facilitation of CSCL activities is widely recognized as one of the main factors affecting student learning outcomes in formal face-to-face settings. However, the orchestration load that such facilitation represents for the teacher, within the constraints of an authentic classroom, remains under-researched. This paper presents a novel method to estimate the cognitive load of teachers during facilitation of CSCL sessions, using mobile eye-tracking techniques. Throughout **three studies** of increasing authenticity, we demonstrate the feasibility of this approach, and extract insights about classroom usability challenges in CSCL practice: the increased load of class-level facilitation, or the real-time monitoring of students’ progress. This new instrument in the CSCL researcher’s toolkit can help focus our attention in critical, fine-grained classroom usability episodes, to make more informed design decisions.
 
 ## The studies: Context and Methods
 
-Our main research question is: can we use eye-tracking techniques to follow cognitive load of teachers facilitating CSCL in authentic settings? In order to explore this question, we set out to apply the measurement of the four metrics used by [Buettner (2013)](http://link.springer.com/chapter/10.1007/978-3-642-40942-4_4) in three studies (with increasing degree of authenticity).
+Our main research question is: _can we use eye-tracking techniques to follow cognitive load of teachers facilitating CSCL in authentic settings?_ In order to explore this question, we set out to apply the measurement of the four metrics used by [Buettner (2013)](http://link.springer.com/chapter/10.1007/978-3-642-40942-4_4) in three studies (with increasing degree of authenticity).
 
 Study | 1 - Analytical | 2 - Semi-authentic | 3 - Authentic
 ------|------------|----------------|----------
@@ -23,7 +23,7 @@ Task | Game-based | Facilitation of small group collaborative work | Mix of lect
 Study duration | 128 games in total, 1.5-4 minutes each | 3 sessions, 35-45 min each | 3 sessions (2 expert, 1 novice), 45-65 min each
 Analysis | Calculation of Load Index, comparison with Tetris game metrics | Calculation of Load Index, Video coding, Comparison of high- and low-load orchestration profiles | Calculation of Load Index, Video coding, Comparison of high- and low-load orchestration profiles
 
-The data analysis of the three studies relies mainly on the calculation of what we call a **Load Index** inferred from eye-tracking measures of the subject. The four measures used by Buettner (mean pupil diameter, pupil diameter standard deviation, saccade speed and number of fixations longer than 500ms) were calculated over a sliding window of 10 seconds (with a 5s slide from one window to the next). Then, a median cut was performed (using the median value of that measurement for the session). Finally, the Load Index was calculated by counting the number of measures that were above the game median for that 10-second window (thus going from 0 to 4), as an estimation of how likely it is that a certain 10-second window represented higher cognitive load than other windows in that session.
+The data analysis of the three studies relies mainly on the calculation of what we call the **Load Index**, inferred from eye-tracking measures of the subject. The four measures used by Buettner (mean pupil diameter, pupil diameter standard deviation, saccade speed and number of fixations longer than 500ms) were calculated over a sliding window of 10 seconds (with a 5s slide from one window to the next). Then, a median cut was performed (using the median value of that measurement for the session). Finally, the Load Index was calculated by counting the number of measures that were above the game median for that 10-second window (thus going from 0 to 4), as an estimation of how likely it is that a certain 10-second window represented higher cognitive load than other windows in that session.
 
 In the second and third studies, the episodes (10-second windows) of extreme Load Index (0 and 4) were manually **video coded**, to describe different aspects of that episode, with regard to the orchestration taking place in that moment:
 
@@ -31,7 +31,7 @@ Orchestration dimension | Teacher activity | Social plane | Main gaze focus
 ------------------------|------------------|--------------|----------------
 Example codes | Explanation/Lecturing (EXP), Monitoring (MON), Task distribution or transition (TDT), Technical or conceptual repairs (REP)... | Individual (IND), Small group (GRP), Class-wide (CLS) | Students’ faces (FAC) or backs (BAK), Tabletop surface (TAB), Paper worksheet (PAP)...
 
-Then, the high- and low- Load Index episodes are compared along these three dimensions, to see if they are significantly different (with a Pearson's chi-squared test of independence).
+Then, the high- and low- Load Index episodes are compared along these three dimensions, to see if they are significantly different (with a Pearson's chi-squared test of independence) in terms of how much certains codes appear in episodes with different Load Index.
 
 ## Before starting: Data download
 
@@ -45,10 +45,12 @@ First of all, we download the datasets for the three studies, which have been pu
 # We load the useful scripts and packages needed throughout the report
 source("./lib/rollingWindows.R")
 source("./lib/loadIndex.R")
+source("./lib/extremeLoadExtraction.R")
 
 rootdir <- getwd()
 # If not present already, download dataset study 1 and uncompress it to Study1/
 setwd(paste(rootdir,"/data/Study1",sep=""))
+# TODO: complete once the datasets are uploaded
 # if(!file.exists())...
 # unzip/bz2...
 # If not present already, download dataset study 2 and uncompress it to Study2/
@@ -57,7 +59,7 @@ setwd(paste(rootdir,"/data/Study1",sep=""))
 
 ## Study 1 (Analytical study): cognitive load in a simple game-based task 
 
-As a first step in our exploration of eye-tracking to follow teacher cognitive load, and taking into account that eye responses are often task-dependent, we devised a first test for the validity of the measurements proposed by Buettner. Using existing eye-tracking data from a previous experiment in which participants played a computer game (unrelated to the task in Buettner’s study), we estimated the evolution of the CL of participants throughout their experience, to see whether the results were consistent with what we knew about the game task in question and its temporal evolution.
+As a first step in our exploration of eye-tracking to follow teacher cognitive load, and taking into account that eye responses are often task-dependent, we devised a first _test for the validity of the measurements proposed by Buettner in a totally different task_. Using existing eye-tracking data from a previous experiment in which participants played a computer game (unrelated to the task in Buettner’s study), we estimated the evolution of the CL of participants throughout their experience, to see whether the results were consistent with what we knew about the game task in question and its temporal evolution.
 
 ### Data pre-processing
 
@@ -111,6 +113,7 @@ for(game in games){
 }       
 
 # Now, loaddata will contain the data to be summarized/visualized
+
 ```
 
 
@@ -120,15 +123,29 @@ If we look at the mean values of Load index and different game variables (mainly
 
 **1. Temporal evolution**
 
-```{r, message=FALSE, warning=FALSE}
+```{r, fig.height=4, fig.width=7, message=FALSE, warning=FALSE}
 require("gplots")
 require("ggplot2")
+
+# We can plot the Load Index graph of one such game, to understand how it looks like
+gamedata <- loaddata[loaddata$gameID == games[1],]
+ggplot(gamedata, aes(x=time, y=Load, col=Load)) + 
+            ggtitle(paste("Load Index, single game\n(estimation of cognitive overload over 10s)",sep="")) + 
+            geom_line(size=1) +
+            theme(axis.text.x = element_blank(),plot.title=element_text(size=20, face="bold"),axis.title=element_text(size=18),panel.background = element_rect(fill = 'white')) +
+            scale_color_gradient(low="green",high="red")
+
+```
+
+We can see that for a single game the load index is quite noise, but has a certain descending trend over time. It may be more interesting to look at the aggregates of all the games we recorded, to see the average evolution of Load Index over time, and also the evolution of the average main game metrics over time:
+
+```{r, fig.height=4, fig.width=7}
 
 # TODO: What was the code for this graph - Figure 1a in the paper??
 
 ```
 
-We can see the average cognitive load index (brown curve) of participants as time went on, as well as the temporal evolution of the stack height (green curve) and stack variance (blue curve). If we think in terms of the particular task (the Tetris game), we get interesting insights into how the cognitive load evolves over time: at the beginning (low mean stack heights) the cognitive load is high (as many alternative options for placing a new piece are open to decide amongst), and it generally goes down as the game goes towards the end (higher mean stack height), until we eventually disengage from the game when we give up. Similar but opposite is the effect of stack variance (higher variance implies more complex stack profiles, difficult to process and with more open alternatives of placement).
+We can see the average cognitive load index (brown curve) of participants as time went on, as well as the temporal evolution of the stack height (green curve) and stack variance (blue curve). If we think in terms of the particular task (the Tetris game), we get interesting insights into how the cognitive load may evolve over time: at the beginning (low mean stack heights) the cognitive load is high (as many alternative options for placing a new piece are open to decide amongst), and it generally goes down as the game goes towards the end (higher mean stack height), until we eventually disengage from the game when we give up. Similar but opposite is the effect of stack variance (higher variance implies more complex stack profiles, difficult to process and with more open alternatives for placement of the next block).
 
 **2. Load Index vs. Game variables (stack height mean/variance)**
 
@@ -143,7 +160,7 @@ plotmeans(loaddata$value.stackVar~loaddata$Load,
             main="Load Index vs. Stack height", barwidth=2)
 ```
 
-The main descriptive statistics of both game variables on 10-second windows, classified by their load index. Our results show that the Load Index is positively correlated with stack variance, and negatively correlated with the mean stack height, and that such an effect is more clearly apparent in the extreme values of the load index.
+The two figures showing main descriptive statistics of both game variables on 10-second windows (classified by their load index of each episode), show that the Load Index is positively correlated with stack variance, and negatively correlated with the mean stack height, and that such an effect is more clearly apparent in the extreme values of the load index.
 
 ### Summary of results
 
@@ -155,27 +172,65 @@ For the next study we aimed to explore the following research questions: _is it 
 
 ### Data pre-processing
 
-We uncompress the data from the study. This includes mainly a time series of eyetracking data for each of the three sessions, plus an additional set of files with the fixation details and saccade details of each session. There is also another file with the codes assigned to a fraction of the of 10-second episodes (those with extreme load indices), as coded by a single human researcher (the video data itself has not been made available due to anonymity reasons), following the three-dimension video coding scheme mentioned above.
+We uncompress the data from the study. This includes mainly a time series of eyetracking data for each of the three sessions, plus an additional set of files with the fixation details and saccade details of each session. There is also another file with the codes assigned to a fraction of the of 10-second episodes (those with extreme load indices), as coded by a single human researcher, following the three-dimension video coding scheme mentioned above. The raw gaze video data itself has not been made available due to anonymity reasons.
 
 Once we uncompress the data, we run the pre-processing of data,  calculating the four eyetracking variables of interest (see previous section), over 10-second rolling windows with 5-second slide, and then merge that data with the video coding data (see ```./data/Study2/preprocessStudy2Data.R``` and ```./lib/rollingWindows.R``` files for details).
 
-```{r, cache=TRUE, message=FALSE, warning=FALSE}
+```{r, cache=FALSE, message=TRUE, warning=FALSE}
 setwd(paste(rootdir,"/data/Study2",sep=""))
 source("preprocessStudy2Data.R")
 # We do the preprocessing, which will generate a Rda file with the 10s
 # window data, and will return the name of the file
+
 cleandatafile <- "Study2ProcessedData.Rda"
 if(!file.exists(cleandatafile)){
-    if(!file.exists("ALLCombinedVariables_timeseriesPupilEvolution.csv")){
-        unzip("ALLCombinedVariables_timeseriesPupilEvolution.csv.zip")                
+    sessions <- c("JDC2014-Session1-eyetracking","JDC2014-Session2-eyetracking","JDC2014-Session3-eyetracking")
+    uncompressneeded <- FALSE    
+    for (session in sessions){
+        #We check whether we have all the raw data elements, uncompressed
+        filename1 <- paste(session,"-eventexport.txt",sep="")
+        filename2 <- paste(session,"-fixationDetails.txt",sep="")
+        filename3 <- paste(session,"-saccadeDetails.txt",sep="")
+        if(!file.exists(filename1) || !file.exists(filename2) || !file.exists(filename3)) uncompressneeded <- TRUE
     }
-    unzip("FixationDetails.zip")
-    preprocessStudy2()
+    
+    if(uncompressneeded) unzip("JDC2014-EyetrackingData.zip")                
+    data <- preprocessStudy2()
 }
+
 ```
 
-### Data analysis
 
+### Data analysis
+The main basic data analysis we do here is just to calculate the Load Index for each 10s window in a game (see ```./lib/loadIndex.R``` file for details):
+
+```{r}
+# We load the overall dataset with the data from the 10s sliding windows
+totaldata <- get(load(paste(rootdir,"/data/Study2/",cleandatafile,sep="")))
+sessions <- c("JDC2014-Session1-eyetracking","JDC2014-Session2-eyetracking","JDC2014-Session3-eyetracking")
+
+# This dataframe will contain the data with the added Load Index data
+loaddata <- data.frame()
+
+# We calculate the load index, considering each session separately for the median cut
+for(session in sessions){
+    data <- totaldata[totaldata$Session == session,]
+    # We add the columns with Load Index data
+    newdata <- calculateLoadIndexSession(data)    
+    # We join the new data into a dataset with all session's data
+    if(length(loaddata)==0) loaddata <- newdata
+    else loaddata <- rbind(loaddata,newdata)
+}       
+
+# Now, loaddata will contain the data to be summarized/visualized
+head(loaddata)
+```
+
+Once we have this load index, the extreme load moments (those with Load Index equal to 0 or 4) are extracted in order to be video coded by a researcher, using the video feed ...
+
+```{r}
+# Add the extract video coding episodes csv ...
+```
 
 ### Main results
 
