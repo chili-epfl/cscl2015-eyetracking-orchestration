@@ -155,9 +155,9 @@ For the next study we aimed to explore the following research questions: _is it 
 
 ### Data pre-processing
 
-We uncompress the data from the study. This includes mainly a time series of eyetracking data for each of the three sessions, plus an additional set of files with the fixation details and saccade details of each session (as exported by the BeGaze software by SMI). There is also another file with the codes assigned to a fraction of the of 10-second episodes (those with extreme load indices), as coded by a single human researcher (the video data itself has not been made available due to anonymity reasons), following the three-dimension video coding scheme mentioned above.
+We uncompress the data from the study. This includes mainly a time series of eyetracking data for each of the three sessions, plus an additional set of files with the fixation details and saccade details of each session. There is also another file with the codes assigned to a fraction of the of 10-second episodes (those with extreme load indices), as coded by a single human researcher (the video data itself has not been made available due to anonymity reasons), following the three-dimension video coding scheme mentioned above.
 
-Once we uncompress the data, we run the pre-processing of data,  calculating the four eyetracking variables of interest (see previous section), over 10-second rolling windows with 5-second slide, and then merge that data with the video coding data (see ```./data/Study1/preprocessStudy1Data.R``` and ```./lib/rollingWindows.R``` files for details).
+Once we uncompress the data, we run the pre-processing of data,  calculating the four eyetracking variables of interest (see previous section), over 10-second rolling windows with 5-second slide, and then merge that data with the video coding data (see ```./data/Study2/preprocessStudy2Data.R``` and ```./lib/rollingWindows.R``` files for details).
 
 ```{r, cache=TRUE, message=FALSE, warning=FALSE}
 setwd(paste(rootdir,"/data/Study2",sep=""))
