@@ -16,8 +16,7 @@ Aside from this README.md file, the dataset is composed of two zip archives:
 
 The data were gathered in the context of an open doors day in our lab, in which whole classrooms of students from nearby primary schools had the chance to experience new learning technologies. In this occasion, a room was set up with five augmented paper tabletop devices running an augmented-paper tabletop collaborative learning software about mathematics. A researcher (a novice in teaching to primary school children) played the role of the teacher/facilitator in **three sessions**, each simulating a math lesson about fractions, assisted by two other researchers and with the presence of two of the usual school teachers acting as observers, during approximately 40 minutes. In total, 61 primary school students (10-12 years old) attended these sessions.
 
-_TODO: what was the mobile eye-tracker model?_
-This main facilitator wore a mobile eyetracker (SMI XXXXXXXXXXXXXXX), from which eye movement and pupil dilation data were recorded. Later on, the data from the eye-tracker was exported (using SMI's BeGaze software v3.4), and a "load index" was calculated for each 10-second episode of the three sessions (see the [CSCL2015 paper report](https://github.com/chili-epfl/cscl2015-eyetracking-orchestration) for further details). From this set of 10-second episodes we selected those that had minimum (0) or maximum (4) cognitive load index, and performed a qualitative video coding of them, to assess the main trends/patterns in orchestration properties of high/low load episodes, regarding: the activity or intervention the teacher was performing, the social plane at which the activity was intended and the main focus of the teacher’s gaze during the episode. More details about the context and method used can be found in [Prieto et al. (2014)](http://dl.acm.org/citation.cfm?id=2669543).
+This main facilitator wore a mobile eyetracker (SMI ETG 30Hz), from which eye movement and pupil dilation data were recorded. Later on, the data from the eye-tracker was exported (using SMI's BeGaze software v3.4), and a "load index" was calculated for each 10-second episode of the three sessions (see the [CSCL2015 paper report](https://github.com/chili-epfl/cscl2015-eyetracking-orchestration) for further details). From this set of 10-second episodes we selected those that had minimum (0) or maximum (4) cognitive load index, and performed a qualitative video coding of them, to assess the main trends/patterns in orchestration properties of high/low load episodes, regarding: the activity or intervention the teacher was performing, the social plane at which the activity was intended and the main focus of the teacher’s gaze during the episode. More details about the context and method used can be found in [Prieto et al. (2014)](http://dl.acm.org/citation.cfm?id=2669543).
 
 # Detailed data structure
 
@@ -27,10 +26,8 @@ Below we describe briefly the format of the data files composing the dataset:
 
 Comma-separated value file (separator=",", comments="#", with headers). This is the raw eye measures time series as exported using BeGaze software. It has the following fields:
 
-_TODO: complete the fields I don't know about_
-
 * Time : timestamp of the sample, in microseconds (number)
-* Type : 
+* Type : protocol used to detect the fixations ( SMP )
 * Trial : trial of the eyetracking recording (number, 1)
 * L Dia X [px] : left-eye pupil diameter X axis in pixels (number)
 * L Dia Y [px] : left-eye pupil diameter Y axis in pixels (number)
@@ -38,24 +35,24 @@ _TODO: complete the fields I don't know about_
 * R Dia X [px] : right-eye pupil diameter X axis in pixels (number)
 * R Dia Y [px] : right-eye pupil diameter Y axis in pixels (number)
 * R Pupil Diameter [mm] : right-eye pupil diameter in mm (number)
-* B POR X [px] : 
-* B POR Y [px] : 
-* L POR X [px] : 
-* L POR Y [px] : 
-* R POR X [px] : 
-* R POR Y [px] : 
-* L EPOS X : 
-* L EPOS Y : 
-* L EPOS Z : 
-* R EPOS X : 
-* R EPOS Y : 
-* R EPOS Z : 
-* L GVEC X : 
-* L GVEC Y : 
-* L GVEC Z : 
-* R GVEC X : 
-* R GVEC Y : 
-* R GVEC Z : 
+* B POR X [px] : binocular point-of regard in the X axis, in pixels (number)
+* B POR Y [px] : binocular point-of regard in the Y axis, in pixels (number) 
+* L POR X [px] : left eye point-of regard in the X axis, in pixels (number)
+* L POR Y [px] : left eye point-of regard in the Y axis, in pixels (number)
+* R POR X [px] : right eye point-of regard in the X axis, in pixels (number)
+* R POR Y [px] : right eye point-of regard in the Y axis, in pixels (number)
+* L EPOS X : left pupil position from the perspective of the subjective camera, in the X axis, in pixels (number)
+* L EPOS Y : left pupil position from the perspective of the subjective camera, in the Y axis, in pixels (number) 
+* L EPOS Z : left pupil position from the perspective of the subjective camera, in the Z axis, in pixels (number)
+* R EPOS X : right pupil position from the perspective of the subjective camera, in the X axis, in pixels (number)
+* R EPOS Y : right pupil position from the perspective of the subjective camera, in the X axis, in pixels (number)
+* R EPOS Z : right pupil position from the perspective of the subjective camera, in the X axis, in pixels (number)
+* L GVEC X : left eye gaze vector, from the perspective of the left eye camera, X axis component (number)
+* L GVEC Y : left eye gaze vector, from the perspective of the left eye camera, Y axis component (number) 
+* L GVEC Z : left eye gaze vector, from the perspective of the left eye camera, Z axis component (number) 
+* R GVEC X : right eye gaze vector, from the perspective of the left eye camera, X axis component (number)
+* R GVEC Y : right eye gaze vector, from the perspective of the left eye camera, Y axis component (number)
+* R GVEC Z : right eye gaze vector, from the perspective of the left eye camera, Z axis component (number)
 * Frame : timestamp of the sample, in video feed hh:mm:ss:frame format (hh:mm:ss:frame)
 * Aux1 : empty field
 * B Event Info: type of event ( - | Saccade | Fixation | Blink )
