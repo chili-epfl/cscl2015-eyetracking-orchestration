@@ -35,24 +35,24 @@ Comma-separated value file (separator=",", comments="#", with headers). This is 
 * R Dia X [px] : right-eye pupil diameter X axis in pixels (number)
 * R Dia Y [px] : right-eye pupil diameter Y axis in pixels (number)
 * R Pupil Diameter [mm] : right-eye pupil diameter in mm (number)
-* B POR X [px] : binocular point-of regard
-* B POR Y [px] : 
-* L POR X [px] : 
-* L POR Y [px] : 
-* R POR X [px] : 
-* R POR Y [px] : 
-* L EPOS X : left pupil position from the perspective of the subjective camera
-* L EPOS Y : 
-* L EPOS Z : 
-* R EPOS X : 
-* R EPOS Y : 
-* R EPOS Z : 
-* L GVEC X : left eye gaze vector, from the perspective of the left eye camera
-* L GVEC Y : 
-* L GVEC Z : 
-* R GVEC X : 
-* R GVEC Y : 
-* R GVEC Z : 
+* B POR X [px] : binocular point-of regard in the X axis, in pixels (number)
+* B POR Y [px] : binocular point-of regard in the Y axis, in pixels (number) 
+* L POR X [px] : left eye point-of regard in the X axis, in pixels (number)
+* L POR Y [px] : left eye point-of regard in the Y axis, in pixels (number)
+* R POR X [px] : right eye point-of regard in the X axis, in pixels (number)
+* R POR Y [px] : right eye point-of regard in the Y axis, in pixels (number)
+* L EPOS X : left pupil position from the perspective of the subjective camera, in the X axis, in pixels (number)
+* L EPOS Y : left pupil position from the perspective of the subjective camera, in the Y axis, in pixels (number) 
+* L EPOS Z : left pupil position from the perspective of the subjective camera, in the Z axis, in pixels (number)
+* R EPOS X : right pupil position from the perspective of the subjective camera, in the X axis, in pixels (number)
+* R EPOS Y : right pupil position from the perspective of the subjective camera, in the X axis, in pixels (number)
+* R EPOS Z : right pupil position from the perspective of the subjective camera, in the X axis, in pixels (number)
+* L GVEC X : left eye gaze vector, from the perspective of the left eye camera, X axis component (number)
+* L GVEC Y : left eye gaze vector, from the perspective of the left eye camera, Y axis component (number) 
+* L GVEC Z : left eye gaze vector, from the perspective of the left eye camera, Z axis component (number) 
+* R GVEC X : right eye gaze vector, from the perspective of the left eye camera, X axis component (number)
+* R GVEC Y : right eye gaze vector, from the perspective of the left eye camera, Y axis component (number)
+* R GVEC Z : right eye gaze vector, from the perspective of the left eye camera, Z axis component (number)
 * Frame : timestamp of the sample, in video feed hh:mm:ss:frame format (hh:mm:ss:frame)
 * Aux1 : empty field
 * B Event Info: type of event ( - | Saccade | Fixation | Blink )
