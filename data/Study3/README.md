@@ -1,7 +1,7 @@
-JDC2014 - An eyetracking dataset from facilitating a semi-authentic multi-tabletop lesson
+DELANA - An eyetracking dataset from facilitating a series of laptop-based lessons
 =======================================================
 
-This dataset contains eye-tracking data from a single subject (a researcher), facilitating three collaborative learning lessons in a multi-tabletop classroom, with real 10-12 year old students. These sessions were recorded during an "open doors day" at the [CHILI Lab](http://chili.epfl.ch).
+This dataset contains eye-tracking data from a two subjects (an expert and a novice teachers), facilitating three collaborative learning lessons (2 for the expert, 1 for the novice) in a classroom with laptops and a projector, with real master-level students. These sessions were recorded during a course on the topic of digital education and learning analytics at [EPFL](http://epfl.ch).
 
 This dataset has been used in several scientific works, such as the [CSCL 2015](http://isls.org/cscl2015/) conference paper "The Burden of Facilitating Collaboration: Towards Estimation of Teacher Orchestration Load using Eye-tracking Measures", by Luis P. Prieto, Kshitij Sharma, Yun Wen & Pierre Dillenbourg. The analysis and usage of this dataset is available publicly at https://github.com/chili-epfl/cscl2015-eyetracking-orchestration
 
@@ -9,21 +9,21 @@ This dataset has been used in several scientific works, such as the [CSCL 2015](
 
 Aside from this README.md file, the dataset is composed of two zip archives:
 
-* JDC2014-EyetrackingData.zip : Contains the raw datasets from the mobile eyetracker that the main session facilitator was wearing, including eye measures time series, fixation and saccade details (as extracted using SMI's BeGaze 3.4 software).
-* JDC2014-VideoCodingData.zip : Contains the codes from the manual video coding, by a single researcher, of the 10-second episodes in which the "load index" calculated from eyetracking metrics (see the [CSCL2015 paper report](https://github.com/chili-epfl/cscl2015-eyetracking-orchestration)) had extreme low/high values.
+* DELANA-EyetrackingData.zip : Contains the raw datasets from the mobile eyetracker that the main session facilitator was wearing, including eye measures time series, fixation and saccade details (as extracted using SMI's BeGaze 3.4 software).
+* DELANA-VideoCodingData.zip : Contains the codes from the manual video coding, by a single researcher, of the 10-second episodes in which the "load index" calculated from eyetracking metrics (see the [CSCL2015 paper report](https://github.com/chili-epfl/cscl2015-eyetracking-orchestration)) had extreme low/high values.
 
 # Data gathering context and method
 
-The data were gathered in the context of an open doors day in our lab, in which whole classrooms of students from nearby primary schools had the chance to experience new learning technologies. In this occasion, a room was set up with five augmented paper tabletop devices running an augmented-paper tabletop collaborative learning software about mathematics. A researcher (a novice in teaching to primary school children) played the role of the teacher/facilitator in **three sessions**, each simulating a math lesson about fractions, assisted by two other researchers and with the presence of two of the usual school teachers acting as observers, during approximately 40 minutes. In total, 61 primary school students (10-12 years old) attended these sessions.
+This study was performed in the context of a real master-level course at our university, on the topic of learning analytics and digital education. In this course several teachers and teaching assistants facilitate the different course sessions, which often combine lecturing and collaborative problem solving. We selected **two of these teachers** (an expert one with more than ten years of teaching experience, and a novice one with two years of only sporadic teaching assistantship), and recorded **three course sessions** of 45-65 minutes, with 12-14 students attending the class (two sessions for the expert teacher, one for the novice teacher). All sessions interspersed explanation/lecturing on the part of the teacher, with student individual and collaborative work (using laptops), and later debriefing of student outcomes. 
 
 _TODO: what was the mobile eye-tracker model?_
-This main facilitator wore a mobile eyetracker (SMI XXXXXXXXXXXXXXX), from which eye movement and pupil dilation data were recorded. Later on, the data from the eye-tracker was exported (using SMI's BeGaze software v3.4), and a "load index" was calculated for each 10-second episode of the three sessions (see the [CSCL2015 paper report](https://github.com/chili-epfl/cscl2015-eyetracking-orchestration) for further details). From this set of 10-second episodes we selected those that had minimum (0) or maximum (4) cognitive load index, and performed a qualitative video coding of them, to assess the main trends/patterns in orchestration properties of high/low load episodes, regarding: the activity or intervention the teacher was performing, the social plane at which the activity was intended and the main focus of the teacher’s gaze during the episode. More details about the context and method used can be found in [Prieto et al. (2014)](http://dl.acm.org/citation.cfm?id=2669543).
+In each session, the teacher that acted as the main facilitator wore a mobile eyetracker (SMI XXXXXXXXXXXXXXX), from which eye movement and pupil dilation data were recorded. Later on, the data from the eye-tracker was exported (using SMI's BeGaze software v3.4), and a "load index" was calculated for each 10-second episode of the three sessions (see the [CSCL2015 paper report](https://github.com/chili-epfl/cscl2015-eyetracking-orchestration) for further details). From this set of 10-second episodes we selected those that had minimum (0) or maximum (4) cognitive load index, and performed a qualitative video coding of them, to assess the main trends/patterns in orchestration properties of high/low load episodes, regarding: the activity or intervention the teacher was performing, the social plane at which the activity was intended and the main focus of the teacher’s gaze during the episode. More details about the method used can be found in [Prieto et al. (2014)](http://dl.acm.org/citation.cfm?id=2669543).
 
 # Detailed data structure
 
 Below we describe briefly the format of the data files composing the dataset:
 
-## JDC2014-SessionX-eyetracking-eventexport.txt (in JDC2014-EyetrackingData.zip)
+## DELANA-SessionX-[Expert|Novice]-eyetracking-eventexport.txt (in DELANA-EyetrackingData.zip)
 
 Comma-separated value file (separator=",", comments="#", with headers). This is the raw eye measures time series as exported using BeGaze software. It has the following fields:
 
@@ -60,9 +60,9 @@ _TODO: complete the fields I don't know about_
 * Aux1 : empty field
 * B Event Info: type of event ( - | Saccade | Fixation | Blink )
 
-## JDC2014-SessionX-eyetracking-fixationDetails.txt (in JDC2014-EyetrackingData.zip)
+## DELANA-SessionX-[Expert|Novice]-eyetracking-fixationDetails.txt (in DELANA-EyetrackingData.zip)
 
-Comma-separated value file (separator=",", with headers). This is the export of the main fixation statistics, taken from the "Fixation details" section of BeGaze's Event Statistics (each row is a detected fixation). It has the following fields:
+Comma-separated value file (separator=";", with headers). This is the export of the main fixation statistics, taken from the "Fixation details" section of BeGaze's Event Statistics (each row is a detected fixation). It has the following fields:
 
 * Trial : trial of the eyetracking recording (e.g., "Trial001")
 * Subject : identifier of the participant recorded (e.g., "Participant 11-2-unified")
@@ -85,9 +85,9 @@ Comma-separated value file (separator=",", with headers). This is the export of 
 * Number : fixation number (number, from 1 to the number of fixations in the session)
 
 
-## JDC2014-SessionX-eyetracking-saccadeDetails.txt (in JDC2014-EyetrackingData.zip)
+## DELANA-SessionX-[Expert|Novice]-eyetracking-saccadeDetails.txt (in DELANA-EyetrackingData.zip)
 
-Comma-separated value file (separator=",", with headers). This is the export of the main saccade statistics, taken from the "Saccade details" section of BeGaze's Event Statistics (each row is a detected saccade). It has the following fields:
+Comma-separated value file (separator=";", with headers). This is the export of the main saccade statistics, taken from the "Saccade details" section of BeGaze's Event Statistics (each row is a detected saccade). It has the following fields:
 
 
 * Trial : trial of the eyetracking recording (e.g., "Trial001")
@@ -115,20 +115,22 @@ Comma-separated value file (separator=",", with headers). This is the export of 
 * Number : fixation number (number, from 1 to the number of fixations in the session)
 
 
-## JDC2014-SessionX-videocoding.csv (in JDC2014-VideoCodingData.zip)
+## DELANA-videocoding.csv (in DELANA-VideoCodingData.zip)
 
 Comma-separated value file (separator=",", with headers), with the video codes assigned to different 10-second episodes by a single researcher/coder, along three main dimensions (only one code from each dimensions is assigned to an episode):
 
 Orchestration dimension | Teacher activity | Social plane | Main gaze focus
 ------------------------|------------------|--------------|----------------
-Example codes | Explanation/Lecturing (EXP), Monitoring (MON), Task distribution or transition (TDT), Technical or conceptual repairs, i.e., solving student questions (REP) | Small group (G), Class-wide (C) | Students’ faces (FAC) or backs (BAK), Tabletop surface (TAB), Teacher desk with manipulatives to distribute (MD), Classroom's whiteboard (W), Additional researchers/facilitators (RES), Single paper manipulatives not on the tabletop (M)
+Example codes | Explanation/Lecturing (EXP), Monitoring (MON), Task distribution or transition (TDT), Technical or conceptual repairs, i.e., solving student questions (REP), Posing questions to students and listening to their answers (QUEST) | Individual (IND), Small group (GRP), Class-wide (CLS) | Students’ faces (FAC) or backs (BAK), Teacher or student's table surface (TAB), Classroom's projector (PROJ), Classroom's whiteboard (WHIT), Additional teacher on the room (TEA), Teacher's own computer (TCOMP), Student's computer (SCOMP)
+
+
 
 The file has the following fields:
 
 * time : timestamp marking the middle-point of the 10-second window of the episode (number)
 * Time.min : timestamp, in minutes/seconds, marking the middle-point of the episode (e.g., "2m50s")
-* Session : session identifier ( JDC2014-Session1-eyetracking | JDC2014-Session2-eyetracking | JDC2014-Session3-eyetracking )
+* Session : session identifier ( DELANA-SessionX-[Expert|Novice]-eyetracking )
 * Short.description : short qualitative description of what is going on during the episode (character)
-* Activity : code along the teacher activity dimension ( EXP | MON | TDT | REP )
-* Social : code along the social plane of interaction dimension ( C | G )
-* Focus : code along the main focus of gaze dimension ( FAC | TAB | BAK | RES | MD | W | M )
+* Activity : code along the teacher activity dimension ( EXP | MON | TDT | REP | QUEST )
+* Social : code along the social plane of interaction dimension ( CLS | GRP | IND )
+* Focus : code along the main focus of gaze dimension ( BAK | FAC | PROJ | SCOMP | TAB | TCOMP | TEA | WHIT )

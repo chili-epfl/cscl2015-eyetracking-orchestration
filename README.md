@@ -18,7 +18,7 @@ Basically, open the ```cscl2015-eyetracking-orchestration.Rmd``` file in RStudio
 
 ## Project structure
 
-The project is organized in a folder structure, loosely based on [ProjectTemplate](http://projecttemplate.net/):
+The project is organized in a folder structure, inspired by [ProjectTemplate](http://projecttemplate.net/):
 
 * data/ : Contains the scripts to download, uncompress and load the raw data
-* lib/ : Contains some useful R scripts used throughout the report, such as the functions to calculate rolling windows, etc.
+* lib/ : Contains some useful R scripts used throughout the report, such as the functions to calculate rolling windows, extract extreme load episodes to be video coded, etc.

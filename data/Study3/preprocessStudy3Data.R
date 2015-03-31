@@ -1,14 +1,14 @@
 # This function loads the time series pupil data from the eyetracker, the fixation and saccade details (in separate
 # txt/csv files), and calculates the averages/counts of multiple eyetracking metrics
 # and game variables for rolling windows of 10s (5s of slide between windows)
-preprocessStudy2 <- function(){
+preprocessStudy3 <- function(){
     
     # Some basic parameters for the sliding windows (in seconds)
     window <- 10
     slide <- 5
     totaldata <- data.frame()
     
-    sessions <- c("JDC2014-Session1-eyetracking","JDC2014-Session2-eyetracking","JDC2014-Session3-eyetracking")
+    sessions <- c("DELANA-Session1-Expert-eyetracking","DELANA-Session2-Expert-eyetracking","DELANA-Session3-Novice-eyetracking")
     for (session in sessions){
         
         # We check whether the clean data is already in place - if so, we skip this pre-processing
@@ -31,7 +31,7 @@ preprocessStudy2 <- function(){
             
             # We load the fixation details file
             filename = paste("./",session,"-fixationDetails.txt", sep="")
-            filedata <- read.csv(filename,comment.char="#")
+            filedata <- read.csv(filename,comment.char="#", sep=";")
             
             # we select the meaningful columns (for now, only fixation start, duration, end in ms)
             # it is different in the exports we have for different teachers!
@@ -47,7 +47,7 @@ preprocessStudy2 <- function(){
             
             # We load the saccade details file
             filename = paste("./",session,"-saccadeDetails.txt", sep="")
-            filedata <- read.csv(filename,comment.char="#")
+            filedata <- read.csv(filename,comment.char="#", sep=";")
             
             # we select the meaningful columns (for now, only saccade start, duration, end in ms and amplitude in degrees)
             # it is different in the exports we have for different teachers!
@@ -100,9 +100,9 @@ preprocessStudy2 <- function(){
 
     }
 
-    print("Preprocessing finished. Writing clean datafile: Study2ProcessedData.Rda")
-    save(totaldata,file="Study2ProcessedData.Rda")
-    #unlink("Study2ProcessedData.Rda")
+    print("Preprocessing finished. Writing clean datafile: Study3ProcessedData.Rda")
+    save(totaldata,file="Study3ProcessedData.Rda")
+    #unlink("Study3ProcessedData.Rda")
     
     totaldata
     

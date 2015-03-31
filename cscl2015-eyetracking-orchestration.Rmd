@@ -80,6 +80,8 @@ source("preprocessStudy1Data.R")
 # We do the preprocessing, which will generate a Rda file with the 10s
 # window data, and will return the name of the file
 cleandatafile <- "Study1ProcessedData.Rda"
+
+# TODO: delete this, the uncompression is done at the top
 if(!file.exists(cleandatafile)){
     if(!file.exists("ALLCombinedVariables_timeseriesPupilEvolution.csv")){
         unzip("ALLCombinedVariables_timeseriesPupilEvolution.csv.zip")                
@@ -172,11 +174,11 @@ For the next study we aimed to explore the following research questions: _is it 
 
 ### Data pre-processing
 
-We uncompress the data from the study. This includes mainly a time series of eyetracking data for each of the three sessions, plus an additional set of files with the fixation details and saccade details of each session. There is also another file with the codes assigned to a fraction of the of 10-second episodes (those with extreme load indices), as coded by a single human researcher, following the three-dimension video coding scheme mentioned above. The raw gaze video data itself has not been made available due to anonymity reasons.
+If needed, we uncompress the data from the study. This includes mainly a time series of eyetracking data for each of the three sessions, plus an additional set of files with the fixation details and saccade details of each session. There is also another file with the codes assigned to a fraction of the of 10-second episodes (those with extreme load indices), as coded by a single human researcher, following the three-dimension video coding scheme mentioned above. The raw gaze video data itself has not been made available due to anonymity reasons.
 
 Once we uncompress the data, we run the pre-processing of data,  calculating the four eyetracking variables of interest (see previous section), over 10-second rolling windows with 5-second slide, and then merge that data with the video coding data (see ```./data/Study2/preprocessStudy2Data.R``` and ```./lib/rollingWindows.R``` files for details).
 
-```{r, cache=FALSE, message=TRUE, warning=FALSE}
+```{r, cache=FALSE, message=FALSE, warning=FALSE}
 setwd(paste(rootdir,"/data/Study2",sep=""))
 source("preprocessStudy2Data.R")
 # We do the preprocessing, which will generate a Rda file with the 10s
@@ -185,6 +187,8 @@ source("preprocessStudy2Data.R")
 cleandatafile <- "Study2ProcessedData.Rda"
 if(!file.exists(cleandatafile)){
     sessions <- c("JDC2014-Session1-eyetracking","JDC2014-Session2-eyetracking","JDC2014-Session3-eyetracking")
+    
+    # TODO: delete this, the uncompression is done at the top
     uncompressneeded <- FALSE    
     for (session in sessions){
         #We check whether we have all the raw data elements, uncompressed
@@ -204,7 +208,7 @@ if(!file.exists(cleandatafile)){
 ### Data analysis
 The main basic data analysis we do here is just to calculate the Load Index for each 10s window in a game (see ```./lib/loadIndex.R``` file for details):
 
-```{r}
+```{r, warning=FALSE}
 # We load the overall dataset with the data from the 10s sliding windows
 totaldata <- get(load(paste(rootdir,"/data/Study2/",cleandatafile,sep="")))
 sessions <- c("JDC2014-Session1-eyetracking","JDC2014-Session2-eyetracking","JDC2014-Session3-eyetracking")
@@ -214,28 +218,107 @@ loaddata <- data.frame()
 
 # We calculate the load index, considering each session separately for the median cut
 for(session in sessions){
+    newdata <- data.frame()
     data <- totaldata[totaldata$Session == session,]
     # We add the columns with Load Index data
-    newdata <- calculateLoadIndexSession(data)    
+    newdata <- calculateLoadIndexSession(data, meanlabel="value.Mean", sdlabel="value.SD", fixlabel="value.Fix", saclabel="value.Sac")    
     # We join the new data into a dataset with all session's data
     if(length(loaddata)==0) loaddata <- newdata
     else loaddata <- rbind(loaddata,newdata)
 }       
 
 # Now, loaddata will contain the data to be summarized/visualized
-head(loaddata)
 ```
 
-Once we have this load index, the extreme load moments (those with Load Index equal to 0 or 4) are extracted in order to be video coded by a researcher, using the video feed ...
+Once we have this load index, the extreme load moments (those with Load Index equal to 0 or 4) are extracted in order to be video coded by a researcher, using the video feed from the eyetracker. The code to generate the csv file to be filled in by the coder is in the ```./lib/extremeLoadExtraction.R``` file:
 
-```{r}
-# Add the extract video coding episodes csv ...
+```{r, warning=FALSE}
+outputfile <- paste(rootdir,"/data/Study2/TimesToVideoCode.csv",sep="")
+extremedata <- extractExtremeLoadMoments(sessions, loaddata, outputfile)
+```
+
+Once the video files are coded, the output should be in a csv file such as the one provided in our dataset. We then match those video codes with our load index data coming from the eyetracking:
+
+```{r, warning=FALSE}
+videosessions <- c("JDC2014-Session1-videocoding","JDC2014-Session2-videocoding","JDC2014-Session3-videocoding")
+
+videodata <- data.frame()
+for(videosession in videosessions){
+    data <- read.csv(paste(rootdir,"/data/Study2/",videosession,".csv",sep=""))
+    if(nrow(videodata)==0) videodata <- data   
+    else videodata <- rbind(videodata,data)
+}
+
+videocodeddata <- merge(loaddata,videodata,by = c("Session","time"), all = T)
+
+# We ensure that the load and video coded variables are factors, for later analysis, and eliminate any levels of the factor not used,
+# and keep only the extreme load cases (in the dataset there are codes for some non-extreme values too)
+videocodeddata <- videocodeddata[complete.cases(videocodeddata) & (videocodeddata$Load == 4 | videocodeddata$Load == 0),]
+videocodeddata$Load <- as.factor(videocodeddata$Load)
+videocodeddata$Activity <- factor(videocodeddata$Activity)
+videocodeddata$Social <- factor(videocodeddata$Social)
+videocodeddata$Focus <- factor(videocodeddata$Focus)
 ```
 
 ### Main results
 
+In this study, we mainly want to see if the high- and low-load index episodes are significatively different, in terms of the video codes assigned to them (the teacher's activity, the social plane of interaction for that activity, and the main gaze focus).
+
+#### Teacher activity
+
+```{r, warning=FALSE}
+tabAct <- table(videocodeddata$Load,videocodeddata$Activity)
+tabAct
+```
+
+We can see the activity profiles for high- and low-load episodes are different but... how different? We perform a chi-squared test, and look at the residuals to see which video codes contribute significantly to these differences (e.g., which residuals are greater than 1.96):
+
+```{r, warning=FALSE}
+chisq.test(tabAct)
+chisq.test(tabAct)$residuals
+```
+
+Thus, we can see that the differences _are statistically significant_, and we can see some trends in the high- and low-load episodes (low-load tend to be more monitoring and repair episodes; high-load tend to be more explanations and task transitions), although only the contribution of the TDT (task transition and distribution) to high-load episodes is significant.
+
+#### Social plane of interaction
+
+```{r, warning=FALSE}
+tabSoc <- table(videocodeddata$Load,videocodeddata$Social)
+tabSoc
+```
+
+We can see the social plane profiles for high- and low-load episodes are totally opposed in this case. We perform a chi-squared test, and look at the residuals to see which video codes contribute significantly to these differences (e.g., which residuals are greater than 1.96):
+
+```{r, warning=FALSE}
+chisq.test(tabSoc)
+chisq.test(tabSoc)$residuals
+```
+
+Thus, we can see that the differences _are statistically significant_, and we can see that all video codes contribute significantly to these differences, meaning that _high-load episodes tend to be more often in the whole-class plane_, while _low-load episodes lie almost exclusively in the small-group plane_.
+
+
+#### Main focus of teacher gaze
+
+```{r, warning=FALSE}
+tabFoc <- table(videocodeddata$Load,videocodeddata$Focus)
+tabFoc
+```
+
+We can see the main focus profiles for high- and low-load episodes are also quite different. We perform a chi-squared test, and look at the residuals to see which video codes contribute significantly to these differences (e.g., which residuals are greater than 1.96):
+
+```{r, warning=FALSE}
+chisq.test(tabFoc)
+chisq.test(tabFoc)$residuals
+```
+
+Thus, we can see that the differences _are statistically significant_, and we can see that all video codes contribute significantly to these differences, meaning that _high-load episodes tend to be more often in the whole-class plane_, while _low-load episodes lie almost exclusively in the small-group plane_.
+
+
 ### Summary of results
 
+A statistical analysis (Pearson’s chi-squared test of independence) of the video coding for the episodes with minimum and maximum load index revealed that high-load and low-load episodes had statistically significant differentiated profiles in all three coding dimensions: teacher activity, activity's social plane and the main focus of teacher's gaze. By looking at the contributions of the different video codes to this statistical difference (the chi-squared test residuals for each code), we could identify the distinct profiles of high- and low-load episodes (i.e., what where the video codes appearing typically in one case or the other): high-load episodes had a higher chance of being transition/task distribution activities, and to occur at the classroom-level, featuring the students’ faces (e.g., when explaining) or backs (e.g., when monitoring the progress of activities), or the teacher’s own desk, which was cluttered with multiple paper elements to be distributed to the student groups as they progressed along the lesson activities. In contrast, low-load episodes occurred almost exclusively at the group social plane, while the teacher was focusing exclusively on one student tabletop.
+
+The results of this study illustrate that it is feasible to use eye-tracking in a semi-authentic CSCL situation (e.g., the calibration procedure needed at the beginning of the eye-tracker recording could easily fit at the beginning of the lesson), and that the load index calculated using such techniques can be used to distinguish high/low load episodes. Furthermore, the study provided certain insights into classroom usability aspects of the specific CSCL technology used in this classroom: the need for classroom-level monitoring support in multi-tabletop classrooms and the dangers of a cluttered augmented paper user interface.
 
 
 
@@ -247,13 +330,228 @@ For the last study, we set out to explore the following research questions: _is 
 
 ### Data pre-processing
 
+If needed, we uncompress the data from the study. This includes mainly a time series of eyetracking data for each of the three sessions, plus an additional set of files with the fixation details and saccade details of each session. There is also another file with the codes assigned to a fraction of the of 10-second episodes (those with extreme load indices), as coded by a single human researcher, following the three-dimension video coding scheme mentioned above. The raw gaze video data itself has not been made available due to anonymity reasons.
+
+Once we uncompress the data, we run the pre-processing of data,  calculating the four eyetracking variables of interest (see previous section), over 10-second rolling windows with 5-second slide, and then merge that data with the video coding data (see ```./data/Study3/preprocessStudy3Data.R``` and ```./lib/rollingWindows.R``` files for details).
+
+```{r, cache=FALSE, message=FALSE, warning=FALSE}
+setwd(paste(rootdir,"/data/Study3",sep=""))
+source("preprocessStudy3Data.R")
+# We do the preprocessing, which will generate a Rda file with the 10s
+# window data, and will return the name of the file
+
+cleandatafile <- "Study3ProcessedData.Rda"
+if(!file.exists(cleandatafile)){
+    sessions <-  c("DELANA-Session1-Expert-eyetracking","DELANA-Session2-Expert-eyetracking","DELANA-Session3-Novice-eyetracking")
+    
+    # TODO: delete this, the uncompression is done at the top
+    uncompressneeded <- FALSE    
+    for (session in sessions){
+        #We check whether we have all the raw data elements, uncompressed
+        filename1 <- paste(session,"-eventexport.txt",sep="")
+        filename2 <- paste(session,"-fixationDetails.txt",sep="")
+        filename3 <- paste(session,"-saccadeDetails.txt",sep="")
+        if(!file.exists(filename1) || !file.exists(filename2) || !file.exists(filename3)) uncompressneeded <- TRUE
+    }
+    
+    if(uncompressneeded) unzip("DELANA-EyetrackingData.zip")                
+    data <- preprocessStudy3()
+}
+
+```
+
+
 ### Data analysis
+The main basic data analysis we do here is just to calculate the Load Index for each 10s window in a game (see ```./lib/loadIndex.R``` file for details):
+
+```{r, warning=FALSE}
+# We load the overall dataset with the data from the 10s sliding windows
+totaldata <- get(load(paste(rootdir,"/data/Study3/",cleandatafile,sep="")))
+sessions <-  c("DELANA-Session1-Expert-eyetracking","DELANA-Session2-Expert-eyetracking","DELANA-Session3-Novice-eyetracking")
+
+# This dataframe will contain the data with the added Load Index data
+loaddata <- data.frame()
+
+# We calculate the load index, considering each session separately for the median cut
+for(session in sessions){
+    newdata <- data.frame()
+    data <- totaldata[totaldata$Session == session,]
+    # We add the columns with Load Index data
+    newdata <- calculateLoadIndexSession(data, meanlabel="value.Mean", sdlabel="value.SD", fixlabel="value.Fix", saclabel="value.Sac")    
+    # We join the new data into a dataset with all session's data
+    if(length(loaddata)==0) loaddata <- newdata
+    else loaddata <- rbind(loaddata,newdata)
+}       
+
+# Now, loaddata will contain the data to be summarized/visualized
+```
+
+Once we have this load index, the extreme load moments (those with Load Index equal to 0 or 4) are extracted in order to be video coded by a researcher, using the video feed from the eyetracker. The code to generate the csv file to be filled in by the coder is in the ```./lib/extremeLoadExtraction.R``` file:
+
+```{r, warning=FALSE}
+outputfile <- paste(rootdir,"/data/Study3/TimesToVideoCode.csv",sep="")
+extremedata <- extractExtremeLoadMoments(sessions, loaddata, outputfile)
+```
+
+Once the video files are coded, the output should be in a csv file such as the one provided in our dataset. We then match those video codes with our load index data coming from the eyetracking:
+
+```{r, warning=FALSE}
+videodata <- read.csv(paste(rootdir,"/data/Study3/DELANA-videocoding.csv",sep=""))
+
+videocodeddata <- merge(loaddata,videodata,by = c("Session","time"), all = T)
+
+# We ensure that the load and video coded variables are factors, for later analysis, and eliminate any levels of the factor not used,
+# and keep only the extreme load cases (in the dataset there are codes for some non-extreme values too)
+videocodeddata <- videocodeddata[complete.cases(videocodeddata) & (videocodeddata$Load == 4 | videocodeddata$Load == 0),]
+videocodeddata$Load <- as.factor(videocodeddata$Load)
+videocodeddata$Activity <- factor(videocodeddata$Activity)
+videocodeddata$Social <- factor(videocodeddata$Social)
+videocodeddata$Focus <- factor(videocodeddata$Focus)
+```
 
 
 ### Main results
 
+In this study, we again want to see if, overall, the high- and low-load index episodes are significatively different, in terms of the video codes assigned to them (the teacher's activity, the social plane of interaction for that activity, and the main gaze focus). However, we also want to see if there are differences in the trends for the novice and the expert teachers that were recorded.
+
+#### Overall load profiles and trends
+
+We perform a similar video code count and statistical tests, as in the previous study. First, we look at the **teacher activity**:
+
+```{r, warning=FALSE}
+# For the teacher activity
+tabAct <- table(videocodeddata$Load,videocodeddata$Activity)
+tabAct
+chisq.test(tabAct)
+chisq.test(tabAct)$residuals
+```
+
+We can see the activity profiles for high- and low-load episodes are somehow different, but the difference is _not statistically significant_.
+
+If we look at the **social plane** of interaction:
+
+```{r, warning=FALSE}
+# We merge individual and group social planes, as they are largely equivalent in the context of these sessions
+levels(videocodeddata$Social) = c("CLS","GRPIND","GRPIND")
+tabSoc <- table(videocodeddata$Load,videocodeddata$Social)
+tabSoc
+chisq.test(tabSoc)
+chisq.test(tabSoc)$residuals
+```
+
+Thus, we can see that the differences _are statistically significant_, and although none of the codes is significant by itself, we can see that there is again a tendency of high-load episodes to be whole-class, while low-load episodes have a mix of individual or small-group plane, but also a large quantity of whole-class episodes among them.
+
+Finally, we can look at the **main gaze focus**:
+
+```{r, warning=FALSE}
+tabFoc <- table(videocodeddata$Load,videocodeddata$Focus)
+tabFoc
+chisq.test(tabFoc)
+chisq.test(tabFoc)$residuals
+```
+
+Thus, we can see that the differences _are statistically significant_, and we can see that there are several trends contributing to this difference, the strongest of which is the unlikeliness of having a high-load episode focused on the teacher's computer (TCOMP). Less significant trends include the focus on the teacher's own table in low-load episodes, or the focus on students' faces or the class's whiteboard during high-load episodes.
+
+
+#### Per-participant load profiles and trends
+
+As we see, the trends in this study are not as clear as in the previous one. Taking into account that this study includes the data of a novice and an expert teachers, we can try to analyze if the different teachers have different load episode patterns, even if the classroom dynamic was similar.
+
+##### Novice teacher
+
+We filter for the session recorded by the novice teacher, and perform a similar video code count and statistical tests. First, we look at the **teacher activity**:
+
+```{r, warning=FALSE}
+partdata <- videocodeddata[grepl("Novice",videocodeddata$Session),]
+
+# We eliminate the video codes that do not appear for this participant
+partdata$Activity <- factor(partdata$Activity)
+# For the teacher activity
+tabAct <- table(partdata$Load,partdata$Activity)
+tabAct
+chisq.test(tabAct)
+chisq.test(tabAct)$residuals
+```
+
+We can see the activity profiles for high- and low-load episodes _are statistically significantly different_. Several trends seem to be contrib uting to this significance, especially explanation activities to high-load episodes, and solving problems or questions (i.e., repairs, REP) to low-load episodes.
+
+If we look at the **social plane** of interaction:
+
+```{r, warning=FALSE}
+# We merge individual and group social planes, as they are largely equivalent in the context of these sessions
+levels(partdata$Social) = c("CLS","GRPIND","GRPIND")
+tabSoc <- table(partdata$Load,partdata$Social)
+tabSoc
+chisq.test(tabSoc)
+chisq.test(tabSoc)$residuals
+```
+
+Thus, we can see that the differences _are statistically significant_, and although none of the codes is significant by itself, we can see that there is again a tendency of high-load episodes to be whole-class, while low-load episodes have a mix of individual or small-group plane, but also an appreciable quantity of whole-class episodes among them.
+
+Finally, we can look at the **main gaze focus**:
+
+```{r, warning=FALSE}
+# We eliminate the video codes that do not appear for this participant
+partdata$Focus <- factor(partdata$Focus)
+# For the main focus of gaze
+tabFoc <- table(partdata$Load,partdata$Focus)
+tabFoc
+chisq.test(tabFoc)
+chisq.test(tabFoc)$residuals
+```
+
+Thus, we can see that the differences _are statistically significant_ (although barely so), and we can see that there are several trends contributing to this difference, such as the focus on the teacher's computer (TCOMP) in low-load episodes, or the focus on the faces of students (FAC) or the classroom's projector (PROJ) in the high-load episodes.
+
+
+##### Expert teacher
+
+We filter for the session recorded by the expert teacher, and perform a similar video code count and statistical tests. First, we look at the **teacher activity**:
+
+```{r, warning=FALSE}
+partdata <- videocodeddata[grepl("Expert",videocodeddata$Session),]
+
+# We eliminate the video codes that do not appear for this participant
+partdata$Activity <- factor(partdata$Activity)
+# For the teacher activity
+tabAct <- table(partdata$Load,partdata$Activity)
+tabAct
+chisq.test(tabAct)
+chisq.test(tabAct)$residuals
+```
+
+We can see the activity profiles for high- and low-load episodes _not statistically significantly different_ in this case, and trends in this case are much less clear than in the previous ones.
+
+If we look at the **social plane** of interaction:
+
+```{r, warning=FALSE}
+# We merge individual and group social planes, as they are largely equivalent in the context of these sessions
+levels(partdata$Social) = c("CLS","GRPIND","GRPIND")
+tabSoc <- table(partdata$Load,partdata$Social)
+tabSoc
+chisq.test(tabSoc)
+chisq.test(tabSoc)$residuals
+```
+
+We can see that the differences are again _not statistically significant_, although we can see similar trends (e.g., it is relatively unlikely to have high-load episodes in a group-individual plane of interaction), only much weaker.
+
+Finally, we can look at the **main gaze focus**:
+
+```{r, warning=FALSE}
+# We eliminate the video codes that do not appear for this participant
+partdata$Focus <- factor(partdata$Focus)
+# For the main focus of gaze
+tabFoc <- table(partdata$Load,partdata$Focus)
+tabFoc
+chisq.test(tabFoc)
+chisq.test(tabFoc)$residuals
+```
+
+In this case we see differences in high- and low-load episode profiles _are statistically significant_. Several trends are contributing to this difference, such as the focus on the teacher's computer (TCOMP) or the classroom's projector (PROJ) in low-load episodes, or the focus on the faces or backs of students (FAC, BAK) or the classroom's whiteboard (WHIT) in the high-load episodes.
+
+
 ### Summary of results
 
+The results of this third study confirm some of the findings of the previous studies in this series (the increased load of classroom-level activities, or in trying to read students’ faces, probably to assess their understanding). They also served to spot cognitive load pattern differences between an expert and a novice teacher (novice’s high CL episodes being more concentrated in distinct kinds of activities/focus than the expert’s -- probably because the expert teacher was never really overloaded, and thus the Load Index will be a much noisier source of data). Finally, this study further confirms that this method for following CL of a teacher/facilitator is usable in authentic situations (although it requires the presence of a researcher/assistant for calibrating the device).
 
 ## Conclusions
 
