@@ -128,6 +128,7 @@ If we look at the mean values of Load index and different game variables (mainly
 ```{r, fig.height=4, fig.width=7, message=FALSE, warning=FALSE}
 require("gplots")
 require("ggplot2")
+require("reshape2")
 
 # We can plot the Load Index graph of one such game, to understand how it looks like
 gamedata <- loaddata[loaddata$gameID == games[1],]
@@ -141,10 +142,14 @@ ggplot(gamedata, aes(x=time, y=Load, col=Load)) +
 
 We can see that for a single game the load index is quite noise, but has a certain descending trend over time. It may be more interesting to look at the aggregates of all the games we recorded, to see the average evolution of Load Index over time, and also the evolution of the average main game metrics over time:
 
-```{r, fig.height=4, fig.width=7}
-
-# TODO: What was the code for this graph - Figure 1a in the paper??
-
+```{r, fig.height=4, fig.width=7, message=F, warning=F}
+# We select the main variables of interest: time, Load, value.stackMean, value.stackVar
+datagraph <- loaddata[,c("time","Load","value.stackMean","value.stackVar")]
+# We square the load, to more easily compare it with the game variables' scale
+datagraph$Load<-(datagraph$Load)^2
+colnames(datagraph) <- c("time","(load index)^2","stack height mean","stack height variance")
+melteddatagraph <- melt(datagraph,id="time")
+ggplot(melteddatagraph,aes(x=time,y=value,colour=variable))+stat_smooth()+ylim(c(0,25))
 ```
 
 We can see the average cognitive load index (brown curve) of participants as time went on, as well as the temporal evolution of the stack height (green curve) and stack variance (blue curve). If we think in terms of the particular task (the Tetris game), we get interesting insights into how the cognitive load may evolve over time: at the beginning (low mean stack heights) the cognitive load is high (as many alternative options for placing a new piece are open to decide amongst), and it generally goes down as the game goes towards the end (higher mean stack height), until we eventually disengage from the game when we give up. Similar but opposite is the effect of stack variance (higher variance implies more complex stack profiles, difficult to process and with more open alternatives for placement of the next block).
