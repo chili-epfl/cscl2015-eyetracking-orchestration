@@ -7,13 +7,13 @@
 calculateLoadIndexSession <- function(data, meanlabel="value.pupilMean", sdlabel="value.pupilSD", fixlabel="value.longFix", saclabel="value.sacSpd"){
     
     # We find out the median value for each parameter, and do the median cut
-    meansessionmed <- median(data[,meanlabel])
+    meansessionmed <- median(data[,meanlabel], na.rm=T)
     data$Above.Mean <- as.numeric(data[,meanlabel] > meansessionmed)
-    sdsessionmed <- median(data[,sdlabel])
+    sdsessionmed <- median(data[,sdlabel], na.rm=T)
     data$Above.SD <- as.numeric(data[,sdlabel] > sdsessionmed)
-    longsessionmed <- median(data[,fixlabel])
+    longsessionmed <- median(data[,fixlabel], na.rm=T)
     data$Above.Fix <- as.numeric(data[,fixlabel] > longsessionmed)
-    sacsessionmed <- median(data[,saclabel])
+    sacsessionmed <- median(data[,saclabel], na.rm=T)
     data$Above.Sac <- as.numeric(data[,saclabel] > sacsessionmed)
     # We calculate the Load Index simply summing the different median cuts
     data$Load <- data$Above.Mean + data$Above.SD + data$Above.Fix + data$Above.Sac
