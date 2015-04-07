@@ -1,7 +1,7 @@
 # This function loads the time series pupil data from the eyetracker, the fixation and saccade details (in separate
 # txt/csv files), and calculates the averages/counts of multiple eyetracking metrics
 # and game variables for rolling windows of 10s (5s of slide between windows)
-preprocessStudy3 <- function(){
+preprocessStudy3 <- function(datadir="."){
     
     # Some basic parameters for the sliding windows (in seconds)
     window <- 10
@@ -12,12 +12,12 @@ preprocessStudy3 <- function(){
     for (session in sessions){
         
         # We check whether the clean data is already in place - if so, we skip this pre-processing
-        if(!file.exists(paste("./",session,".EyetrackerEvents.rda",sep="")) ||
-               !file.exists(paste("./",session,".EyetrackerFixations.rda",sep="")) ||
-               !file.exists(paste("./",session,".EyetrackerSaccades.rda",sep=""))){
+        if(!file.exists(paste(datadir,"/",session,".EyetrackerEvents.rda",sep="")) ||
+               !file.exists(paste(datadir,"/",session,".EyetrackerFixations.rda",sep="")) ||
+               !file.exists(paste(datadir,"/",session,".EyetrackerSaccades.rda",sep=""))){
             
             # We load the raw events export
-            filename = paste("./",session,"-eventexport.txt", sep="")
+            filename = paste(datadir,"/",session,"-eventexport.txt", sep="")
             filedata <- read.csv(filename,as.is=T,comment.char="#")
             
             # From all the data, we only need timestamp, pupil diameter (L,R, in mm)
@@ -30,7 +30,7 @@ preprocessStudy3 <- function(){
             pupildata$Time.ms <- (pupildata$Time - time0) / 1000
             
             # We load the fixation details file
-            filename = paste("./",session,"-fixationDetails.txt", sep="")
+            filename = paste(datadir,"/",session,"-fixationDetails.txt", sep="")
             filedata <- read.csv(filename,comment.char="#", sep=";")
             
             # we select the meaningful columns (for now, only fixation start, duration, end in ms)
@@ -46,7 +46,7 @@ preprocessStudy3 <- function(){
             fixdata$Time <- time0 + (fixdata$Time.ms)*1000
             
             # We load the saccade details file
-            filename = paste("./",session,"-saccadeDetails.txt", sep="")
+            filename = paste(datadir,"/",session,"-saccadeDetails.txt", sep="")
             filedata <- read.csv(filename,comment.char="#", sep=";")
             
             # we select the meaningful columns (for now, only saccade start, duration, end in ms and amplitude in degrees)
@@ -70,9 +70,9 @@ preprocessStudy3 <- function(){
         }
         
         # We load the clean data, just in case we did not the previous steps
-        pupildata <- get(load(paste("./",session,".EyetrackerEvents.rda",sep="")))
-        fixdata <- get(load(paste("./",session,".EyetrackerFixations.rda",sep="")))
-        sacdata <- get(load(paste("./",session,".EyetrackerSaccades.rda",sep="")))
+        pupildata <- get(load(paste(datadir,"/",session,".EyetrackerEvents.rda",sep="")))
+        fixdata <- get(load(paste(datadir,"/",session,".EyetrackerFixations.rda",sep="")))
+        sacdata <- get(load(paste(datadir,"/",session,".EyetrackerSaccades.rda",sep="")))
         
         # We get the rolling window for the mean pupil diameter, and its median value for a median cut
         meandata <- rollingMean(pupildata$Time.ms,pupildata$L.Pupil.Diameter..mm.,window*1000,slide*1000)
@@ -101,7 +101,7 @@ preprocessStudy3 <- function(){
     }
 
     print("Preprocessing finished. Writing clean datafile: Study3ProcessedData.Rda")
-    save(totaldata,file="Study3ProcessedData.Rda")
+    save(totaldata,file=paste(datadir,"/Study3ProcessedData.Rda",sep=""))
     #unlink("Study3ProcessedData.Rda")
     
     totaldata

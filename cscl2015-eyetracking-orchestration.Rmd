@@ -1,7 +1,12 @@
 ---
 title: "The Burden of Facilitating Collaboration: Towards Estimation of Teacher Orchestration Load using Eye-tracking Measures"
 author: "Luis P. Prieto, Kshitij Sharma, Yun Wen & Pierre Dillenbourg"
-output: html_document
+output:
+  html_document:
+    pandoc_args: [
+      "+RTS", "-K64m",
+      "-RTS"
+    ]
 ---
 
 This is an R Markdown document to reproduce the main data preprocessing, analysis and visualization for the homonymous [CSCL2015 conference](http://isls.org/cscl2015/) paper. Below, we reproduce the abstract of the paper, a summary of the context and methods of the studies, and then the analysis and visualization of results from the studies.
@@ -37,11 +42,11 @@ Then, the high- and low- Load Index episodes are compared along these three dime
 
 First of all, we download the datasets for the three studies, which have been published in Zenodo: 
 
-* [Dataset for Study 1 (Tetris games) MISSING LINK]()
-* [Dataset for Study 2 (Multi-tabletop sessions in the lab, primary school students) MISSING LINK]()
-* [Dataset for Study 3 (Laptop-and-projector sessions in a university course) MISSING LINK]()
+* [Dataset for Study 1 (Tetris games)](https://zenodo.org/record/16516)
+* [Dataset for Study 2 (Multi-tabletop sessions in the lab, primary school students)](https://zenodo.org/record/16515)
+* [Dataset for Study 3 (Laptop-and-projector sessions in a university course)](https://zenodo.org/record/16514)
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # We load the useful scripts and packages needed throughout the report
 source("./lib/rollingWindows.R")
 source("./lib/loadIndex.R")
@@ -50,11 +55,30 @@ source("./lib/extremeLoadExtraction.R")
 rootdir <- getwd()
 # If not present already, download dataset study 1 and uncompress it to Study1/
 setwd(paste(rootdir,"/data/Study1",sep=""))
-# TODO: complete once the datasets are uploaded
-# if(!file.exists())...
-# unzip/bz2...
+if(!file.exists("ALLCombinedVariables_timeseriesPupilEvolution.csv.zip") || !file.exists("FixationDetails.zip")){
+    download.file("https://zenodo.org/record/16516/files/ALLCombinedVariables_timeseriesPupilEvolution.csv.zip", destfile="ALLCombinedVariables_timeseriesPupilEvolution.csv.zip", method="curl")
+    unzip("ALLCombinedVariables_timeseriesPupilEvolution.csv.zip")
+    download.file("https://zenodo.org/record/16516/files/FixationDetails.zip", destfile="FixationDetails.zip", method="curl")
+    unzip("FixationDetails.zip")
+} 
+
 # If not present already, download dataset study 2 and uncompress it to Study2/
+setwd(paste(rootdir,"/data/Study2",sep=""))
+if(!file.exists("JDC2014-VideoCodingData.zip") || !file.exists("JDC2014-EyetrackingData.zip")){
+    download.file("https://zenodo.org/record/16515/files/JDC2014-VideoCodingData.zip", destfile="JDC2014-VideoCodingData.zip", method="curl")
+    unzip("JDC2014-VideoCodingData.zip")
+    download.file("https://zenodo.org/record/16515/files/JDC2014-EyetrackingData.zip", destfile="JDC2014-EyetrackingData.zip", method="curl")
+    unzip("JDC2014-EyetrackingData.zip")
+} 
+
 # If not present already, download dataset study 3 and uncompress it to Study3/
+setwd(paste(rootdir,"/data/Study3",sep=""))
+if(!file.exists("DELANA-VideoCodingData.zip") || !file.exists("DELANA-EyetrackingData.zip")){
+    download.file("https://zenodo.org/record/16514/files/DELANA-VideoCodingData.zip", destfile="DELANA-VideoCodingData.zip", method="curl")
+    unzip("DELANA-VideoCodingData.zip")
+    download.file("https://zenodo.org/record/16514/files/DELANA-EyetrackingData.zip", destfile="DELANA-EyetrackingData.zip", method="curl")
+    unzip("DELANA-EyetrackingData.zip")
+} 
 ```
 
 ## Study 1 (Analytical study): cognitive load in a simple game-based task 
@@ -74,20 +98,15 @@ Once we uncompress the data, we run the pre-processing of data: basically, separ
 
 (see ```./data/Study1/preprocessStudy1Data.R``` and ```./lib/rollingWindows.R``` files for details)
 
-```{r, cache=TRUE, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results='hide'}
 setwd(paste(rootdir,"/data/Study1",sep=""))
 source("preprocessStudy1Data.R")
 # We do the preprocessing, which will generate a Rda file with the 10s
 # window data, and will return the name of the file
 cleandatafile <- "Study1ProcessedData.Rda"
 
-# TODO: delete this, the uncompression is done at the top
 if(!file.exists(cleandatafile)){
-    if(!file.exists("ALLCombinedVariables_timeseriesPupilEvolution.csv")){
-        unzip("ALLCombinedVariables_timeseriesPupilEvolution.csv.zip")                
-    }
-    unzip("FixationDetails.zip")
-    preprocessStudy1()
+    preprocessStudy1(datadir=paste(rootdir,"/data/Study1",sep=""))
 }
 ```
 
@@ -204,7 +223,7 @@ if(!file.exists(cleandatafile)){
     }
     
     if(uncompressneeded) unzip("JDC2014-EyetrackingData.zip")                
-    data <- preprocessStudy2()
+    data <- preprocessStudy2(datadir=paste(rootdir,"/data/Study2",sep=""))
 }
 
 ```
@@ -360,7 +379,7 @@ if(!file.exists(cleandatafile)){
     }
     
     if(uncompressneeded) unzip("DELANA-EyetrackingData.zip")                
-    data <- preprocessStudy3()
+    data <- preprocessStudy3(datadir=paste(rootdir,"/data/Study3",sep=""))
 }
 
 ```

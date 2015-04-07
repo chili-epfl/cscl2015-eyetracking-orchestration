@@ -4,10 +4,10 @@ require("ff")
 # (including Tetris game variables), the fixation details (in separate
 # csv files), and calculates the averages of multiple eyetracking metrics
 # and game variables for rolling windows of 10s (5s of slide between windows)
-preprocessStudy1 <- function(){
+preprocessStudy1 <- function(datadir="."){
     
     # We load the pupil time series data (BIG file!)
-    tetrisPupil <- read.csv.ffdf(file="ALLCombinedVariables_timeseriesPupilEvolution.csv",header=T,VERBOSE=T,first.rows=10000,next.rows=50000,colClasses=NA)
+    tetrisPupil <- read.csv.ffdf(file=paste(datadir,"/ALLCombinedVariables_timeseriesPupilEvolution.csv",sep=""),header=T,VERBOSE=T,first.rows=10000,next.rows=50000,colClasses=NA)
     
     
     # The game IDs to iterate through
@@ -42,7 +42,7 @@ preprocessStudy1 <- function(){
         gamestackVar <- rollingMean(gamepupil$time.milliseconds.,gamepupil$Stack.height.variance,window,slide)
         
         # We now try to get the fixation (and indirectly, saccade) information for the game
-        gamefix <- read.csv(file=paste("ATESTvariables_",games[1],".csv",sep=""), header=T)
+        gamefix <- read.csv(file=paste(datadir,"/ATESTvariables_",games[1],".csv",sep=""), header=T)
         gamefix$fixtime <- gamefix$start + (gamefix$end - gamefix$start)/2 # We make the Fixation time equal to the middle point of the fixation
         gamefix$duration <- gamefix$end - gamefix$start
         gamefixLong <- rollingLong(gamefix$fixtime,gamefix$duration,window,slide,inittime=gameinit)
@@ -85,8 +85,8 @@ preprocessStudy1 <- function(){
     }
     
     print("Preprocessing finished. Writing clean datafile: Study1ProcessedData.Rda")
-    save(totaldata,file="Study1ProcessedData.Rda")
-    unlink("Study1ProcessedData.Rda")
+    save(totaldata,file=paste(datadir,"/Study1ProcessedData.Rda",sep=""))
+    #unlink("Study1ProcessedData.Rda")
     
     totaldata
     
